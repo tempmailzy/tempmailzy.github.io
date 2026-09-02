@@ -1,0 +1,223 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Mailzy — Temporary Email</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="description" content="Generate a temporary email address instantly — no registration required. Incoming messages appear in real time." />
+  <meta name="theme-color" content="#0b0c14" />
+
+  <!-- Open Graph / link previews -->
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="Mailzy — Temporary Email Service" />
+  <meta property="og:description" content="A temporary email address, issued instantly. No registration, nothing retained." />
+  <meta property="og:image" content="og-image.svg" />
+
+  <!-- Twitter card -->
+  <meta name="twitter:card" content="summary" />
+  <meta name="twitter:title" content="Mailzy — Temporary Email Service" />
+  <meta name="twitter:description" content="A temporary email address, issued instantly. No registration, nothing retained." />
+  <meta name="twitter:image" content="og-image.svg" />
+
+  <link rel="icon" href="favicon.svg" type="image/svg+xml" />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap"
+    rel="stylesheet"
+  />
+
+  <link rel="stylesheet" href="css/styles.css" />
+
+  <!-- Set the theme before first paint so there's no flash of the wrong
+       mode. Theme preference is UI-only and unrelated to the mailbox
+       session rule below — it's fine to persist in localStorage. -->
+  <script>
+    (function () {
+      try {
+        var stored = localStorage.getItem('theme');
+        document.documentElement.dataset.theme = stored === 'light' ? 'light' : 'dark';
+      } catch (e) {
+        document.documentElement.dataset.theme = 'dark';
+      }
+    })();
+  </script>
+</head>
+<body>
+  <nav class="topnav">
+    <div class="topnav__inner">
+      <div class="brand">
+        <span class="brand-mark" aria-hidden="true">
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M6 17V7l6 7 6-7v10" />
+          </svg>
+        </span>
+        <span class="brand-name">Mail<span class="brand-accent">zy</span></span>
+      </div>
+
+      <div class="nav-actions">
+        <button type="button" class="theme-toggle" id="themeToggleBtn" aria-pressed="false">
+          <span class="theme-toggle__icon" id="themeToggleIcon" aria-hidden="true">🌙</span>
+          <span id="themeToggleLabel">Dark Mode</span>
+        </button>
+        <!-- Reflects the page's ACTUAL protocol (see js/app.js) — this
+             claims transport security only, never mail privacy. The
+             address-hint text below is explicit that mail itself
+             isn't private; this badge must not contradict that. -->
+        <span class="security-badge" id="securityBadge" hidden>
+          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" /><path d="m9 12 2 2 4-4" /></svg>
+          <span>HTTPS Encrypted</span>
+        </span>
+      </div>
+    </div>
+  </nav>
+
+  <div class="page" id="top">
+    <section class="hero">
+      <h1>A Disposable Inbox, Ready Instantly</h1>
+      <p>No registration or password required &mdash; your address is active immediately.</p>
+    </section>
+
+    <main class="app-card" id="app">
+      <!-- Loading state -->
+      <section class="panel-loading" id="loadingState" aria-live="polite">
+        <span class="spinner" aria-hidden="true"></span>
+        <p>
+          Provisioning your inbox<span class="dots" aria-hidden="true"><span>.</span><span>.</span><span>.</span></span>
+        </p>
+      </section>
+
+      <!-- Error state (temp-mail API unreachable / exhausted retries) -->
+      <section class="panel-error" id="errorState" hidden role="alert">
+        <p class="panel-error__title">Connection Failed</p>
+        <p class="panel-error__message" id="errorMessage">
+          The mail service is temporarily unavailable.
+        </p>
+        <button type="button" class="btn btn--primary" id="retryBtn">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a9 9 0 1 1-2.64-6.36" /><path d="M21 3v6h-6" /></svg>
+          Try again
+        </button>
+      </section>
+
+      <!-- Main panel -->
+      <div class="panel-body" id="ticketBody" hidden>
+        <div class="address-card">
+          <span class="address-card__icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M6 17V7l6 7 6-7v10" />
+            </svg>
+          </span>
+          <div class="address-card__main">
+            <label class="address-card__label" for="addressField">Temporary Email Address</label>
+            <input type="text" id="addressField" class="address-field" readonly spellcheck="false" />
+          </div>
+          <button type="button" class="btn btn--primary btn--pill" id="copyBtn">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="9" width="13" height="13" rx="2" /><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" /></svg>
+            <span id="copyBtnLabel">Copy</span>
+          </button>
+        </div>
+
+        <div class="expiry-row">
+          <span>Retention Period</span>
+          <span id="expiryText">&mdash;</span>
+        </div>
+        <div class="expiry-bar" role="presentation">
+          <div class="expiry-bar__fill" id="expiryBarFill"></div>
+        </div>
+
+        <p class="address-hint">
+          Mail sent to this address is delivered below. Treat it as a shared inbox, not a private one &mdash;
+          avoid using it for anything sensitive.
+        </p>
+
+        <div class="inbox-header">
+          <div class="inbox-header__title">
+            <h2>Inbox</h2>
+            <span class="badge" id="unreadBadge" hidden></span>
+          </div>
+          <div class="inbox-header__actions">
+            <button type="button" class="btn btn--outline" id="refreshBtn">
+              <svg class="icon-refresh" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a9 9 0 1 1-2.64-6.36" /><path d="M21 3v6h-6" /></svg>
+              Refresh
+            </button>
+            <button type="button" class="btn btn--primary" id="newAddressBtn">
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v14M5 12h14" /></svg>
+              New address
+            </button>
+          </div>
+        </div>
+
+        <!-- Screen-reader-only status announcer — the visible badge +
+             list below carry the same information visually. -->
+        <p class="sr-only" id="inboxStatus" aria-live="polite">Waiting for mail&hellip;</p>
+
+        <div class="message-list-wrap">
+          <ul class="message-list" id="messageList"></ul>
+        </div>
+
+        <button type="button" class="load-more" id="loadMoreBtn" hidden>
+          Load more messages
+          <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6" /></svg>
+        </button>
+      </div>
+    </main>
+
+    <section class="features">
+      <div class="feature-card">
+        <span class="feature-card__number">01</span>
+        <span class="feature-card__icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9.88 9.88a3 3 0 1 0 4.24 4.24" /><path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68" /><path d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61" /><path d="m2 2 20 20" /></svg>
+        </span>
+        <h3>Anonymous</h3>
+        <p>No account or personal details required.</p>
+      </div>
+      <div class="feature-card">
+        <span class="feature-card__number">02</span>
+        <span class="feature-card__icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z" /></svg>
+        </span>
+        <h3>Instant</h3>
+        <p>Your address is active the moment this page loads.</p>
+      </div>
+      <div class="feature-card">
+        <span class="feature-card__number">03</span>
+        <span class="feature-card__icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" /></svg>
+        </span>
+        <h3>Disposable</h3>
+        <p>Discard it at any time without affecting your primary inbox.</p>
+      </div>
+    </section>
+
+    <footer class="site-footer">
+      <p>
+        Mailboxes are provided by
+        <a href="https://mail.gw" rel="noopener noreferrer" target="_blank">mail.gw</a>, an independent
+        third-party service. Messages are not private or permanent &mdash; please avoid using this address
+        for sensitive communications.
+      </p>
+    </footer>
+  </div>
+
+  <!-- Message detail overlay -->
+  <div class="message-overlay" id="messageOverlay" hidden>
+    <div class="message-detail" role="dialog" aria-modal="true" aria-labelledby="messageSubject">
+      <button type="button" class="btn btn--icon message-detail__close" id="closeMessageBtn" aria-label="Close message">
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12" /></svg>
+      </button>
+      <p class="message-detail__meta" id="messageFrom"></p>
+      <h2 class="message-detail__subject" id="messageSubject"></h2>
+      <pre class="message-detail__body" id="messageBody"></pre>
+    </div>
+  </div>
+
+  <!-- Toast notifications — copy confirmation, address changes, new
+       mail arriving. role="status" + aria-live so screen readers get
+       them too, without stealing focus. -->
+  <div class="toast-region" id="toastRegion" aria-live="polite" aria-atomic="false"></div>
+
+  <script src="js/mailtm.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>

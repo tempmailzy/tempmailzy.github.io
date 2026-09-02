@@ -1,0 +1,14 @@
+# OS cruft
+.DS_Store
+Thumbs.db
+
+# Editor
+.vscode/
+.idea/
+
+# Node (in case any tooling gets added later — this project itself has none)
+node_modules/
+npm-debug.log*
+
+# Netlify local state
+.netlify/
