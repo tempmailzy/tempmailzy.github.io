@@ -217,12 +217,18 @@
     </section>
 
     <footer class="site-footer">
+      <p class="site-footer__links">
+        <a href="about.html">About</a>
+        <a href="privacy.html">Privacy Policy</a>
+        <a href="https://github.com/tempmailzy/tempmailzy" rel="noopener noreferrer" target="_blank">GitHub</a>
+      </p>
       <p>
         Mailboxes are provided by
         <a href="https://mail.gw" rel="noopener noreferrer" target="_blank">mail.gw</a>, an independent
         third-party service. Messages are not private or permanent &mdash; please avoid using this address
         for sensitive communications.
       </p>
+      <p>&copy; <span id="footerYear"></span> Mailzy.</p>
     </footer>
   </div>
 
@@ -242,6 +248,11 @@
        mail arriving. role="status" + aria-live so screen readers get
        them too, without stealing focus. -->
   <div class="toast-region" id="toastRegion" aria-live="polite" aria-atomic="false"></div>
+
+  <script>
+    var fy = document.getElementById('footerYear');
+    if (fy) fy.textContent = new Date().getFullYear();
+  </script>
 
   <script src="js/mailtm.js"></script>
   <script src="js/app.js"></script>
