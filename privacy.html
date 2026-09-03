@@ -1,0 +1,175 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Privacy Policy — Mailzy</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="description" content="What Mailzy does and doesn't collect, how mail.gw fits in, and how Google AdSense's cookies are used on this site." />
+  <meta name="robots" content="index, follow" />
+  <meta name="theme-color" content="#0b0c14" />
+  <link rel="canonical" href="https://tempmailzy.github.io/privacy.html" />
+  <meta name="google-adsense-account" content="ca-pub-9466250545587012" />
+
+  <link rel="icon" href="favicon.svg" type="image/svg+xml" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap"
+    rel="stylesheet"
+  />
+  <link rel="stylesheet" href="css/styles.css" />
+
+  <script>
+    (function () {
+      try {
+        var stored = localStorage.getItem('theme');
+        document.documentElement.dataset.theme = stored === 'light' ? 'light' : 'dark';
+      } catch (e) {
+        document.documentElement.dataset.theme = 'dark';
+      }
+    })();
+  </script>
+</head>
+<body>
+  <nav class="topnav">
+    <div class="topnav__inner">
+      <a class="brand" href="index.html" style="text-decoration: none;">
+        <span class="brand-mark" aria-hidden="true">
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M6 17V7l6 7 6-7v10" />
+          </svg>
+        </span>
+        <span class="brand-name">Mail<span class="brand-accent">zy</span></span>
+      </a>
+
+      <div class="nav-actions">
+        <button type="button" class="theme-toggle" id="themeToggleBtn" aria-pressed="false">
+          <span class="theme-toggle__icon" id="themeToggleIcon" aria-hidden="true">🌙</span>
+          <span id="themeToggleLabel">Dark Mode</span>
+        </button>
+      </div>
+    </div>
+  </nav>
+
+  <div class="page">
+    <main class="legal-page">
+      <h1>Privacy Policy</h1>
+      <p class="legal-updated">Last updated: September 2026</p>
+
+      <section>
+        <h2>The short version</h2>
+        <p>
+          Mailzy has no accounts, no sign-up, and no server-side database. We don't collect your name,
+          your real email address, or any personal information, because we never ask for any. What
+          follows is the specific, non-generic detail on what actually happens when you use this site.
+        </p>
+      </section>
+
+      <section>
+        <h2>The temporary mailbox (mail.gw)</h2>
+        <p>
+          When you load Mailzy, your browser creates a temporary mailbox directly with
+          <a href="https://mail.gw" rel="noopener noreferrer" target="_blank">mail.gw</a>, an independent
+          third-party email service. Mailzy itself never sees, stores, or has access to the address,
+          password, or any message content &mdash; that data lives with mail.gw and travels directly
+          between your browser and their servers. Review
+          <a href="https://mail.gw" rel="noopener noreferrer" target="_blank">mail.gw's own terms</a>
+          for how they handle it on their end. Messages sent to a Mailzy address are not private:
+          anyone who has or guesses the address can read what's delivered to it.
+        </p>
+      </section>
+
+      <section>
+        <h2>What we store in your browser</h2>
+        <p>
+          Mailzy saves exactly one thing in your browser's local storage: your light/dark theme
+          preference, so it's remembered on your next visit. That's it &mdash; the active temporary
+          address itself is deliberately <em>not</em> saved anywhere; closing the tab discards it.
+        </p>
+      </section>
+
+      <section>
+        <h2>Advertising (Google AdSense)</h2>
+        <p>
+          This site displays ads served by Google AdSense. Google and its partners may use cookies and
+          similar technologies to serve ads based on your prior visits to this or other websites. You
+          can review how Google uses this data at
+          <a href="https://policies.google.com/technologies/partner-sites" rel="noopener noreferrer" target="_blank">
+            How Google uses information from sites that use its services
+          </a>,
+          and opt out of personalized advertising through
+          <a href="https://adssettings.google.com/" rel="noopener noreferrer" target="_blank">Google Ads Settings</a>.
+          Third-party vendors, including Google, may also use cookies to serve ads based on someone's
+          past visits to this site.
+        </p>
+      </section>
+
+      <section>
+        <h2>Analytics</h2>
+        <p>
+          Mailzy does not currently run any analytics or tracking scripts of its own. If that changes,
+          this page will be updated to say exactly what was added and why.
+        </p>
+      </section>
+
+      <section>
+        <h2>Children's privacy</h2>
+        <p>
+          Mailzy is not directed at children under 13, and we do not knowingly collect information from
+          them.
+        </p>
+      </section>
+
+      <section>
+        <h2>Changes to this policy</h2>
+        <p>
+          If this policy changes, the "Last updated" date at the top of this page will change with it.
+          Material changes will be reflected in plain language here, not buried in legal boilerplate.
+        </p>
+      </section>
+
+      <section>
+        <h2>Contact</h2>
+        <p>
+          Mailzy is an open-source project. Questions, concerns, or corrections are welcome via
+          <a href="https://github.com/tempmailzy/tempmailzy" rel="noopener noreferrer" target="_blank">
+            the GitHub repository
+          </a>.
+        </p>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <p class="site-footer__links">
+        <a href="index.html">Inbox</a>
+        <a href="about.html">About</a>
+        <a href="https://github.com/tempmailzy/tempmailzy" rel="noopener noreferrer" target="_blank">GitHub</a>
+      </p>
+      <p>&copy; <span id="footerYear"></span> Mailzy.</p>
+    </footer>
+  </div>
+
+  <script>
+    var fy = document.getElementById('footerYear');
+    if (fy) fy.textContent = new Date().getFullYear();
+
+    var btn = document.getElementById('themeToggleBtn');
+    var icon = document.getElementById('themeToggleIcon');
+    var label = document.getElementById('themeToggleLabel');
+    function applyTheme(theme) {
+      document.documentElement.dataset.theme = theme;
+      try {
+        localStorage.setItem('theme', theme);
+      } catch (e) {}
+      icon.textContent = theme === 'light' ? '☀️' : '🌙';
+      label.textContent = theme === 'light' ? 'Light Mode' : 'Dark Mode';
+      btn.setAttribute('aria-pressed', theme === 'light' ? 'true' : 'false');
+    }
+    btn.addEventListener('click', function () {
+      var current = document.documentElement.dataset.theme === 'light' ? 'light' : 'dark';
+      applyTheme(current === 'light' ? 'dark' : 'light');
+    });
+    applyTheme(document.documentElement.dataset.theme === 'light' ? 'light' : 'dark');
+  </script>
+</body>
+</html>
