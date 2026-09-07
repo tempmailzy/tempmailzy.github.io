@@ -164,10 +164,18 @@
     };
   }
 
+  // Guerrilla Mail auto-injects this system "welcome" message into every
+  // new inbox. Showing it would name the backup provider in the message
+  // list itself — the exact disclosure the owner asked to remove from
+  // the UI (see updateProviderBadge) — so it's filtered out here rather
+  // than left for the badge removal to be undermined by an actual email.
+  const GUERRILLA_SYSTEM_SENDER = 'no-reply@guerrillamail.com';
+
   async function providerListMessages(page) {
     if (session.provider === 'guerrillamail') {
       const { messages, totalItems } = await GuerrillaMail.listMessages(session.sidToken);
-      return { messages: messages.map(normalizeMessage), totalItems };
+      const realMessages = messages.filter((m) => m.mail_from !== GUERRILLA_SYSTEM_SENDER);
+      return { messages: realMessages.map(normalizeMessage), totalItems };
     }
     return MailTm.listMessages(session.token, page);
   }
