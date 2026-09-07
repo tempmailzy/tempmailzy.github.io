@@ -145,7 +145,13 @@
         </div>
 
         <div class="expiry-row">
-          <span>Retention Period</span>
+          <span>
+            Retention Period
+            <!-- Only shown when the backup provider is actually active —
+                 disclosed, not silent, per the no-silent-fallback rule.
+                 Hidden entirely while mail.gw (the primary) is working. -->
+            <span class="provider-badge" id="providerBadge" hidden></span>
+          </span>
           <span id="expiryText">&mdash;</span>
         </div>
         <div class="expiry-bar" role="presentation">
@@ -255,6 +261,7 @@
   </script>
 
   <script src="js/mailtm.js"></script>
+  <script src="js/guerrillamail.js"></script>
   <script src="js/app.js"></script>
 </body>
 </html>
