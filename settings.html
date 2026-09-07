@@ -2,12 +2,12 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Privacy Policy — Mailzy</title>
+  <title>Settings — Mailzy</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <meta name="description" content="What Mailzy does and doesn't collect, how mail.gw fits in, and how Google AdSense's cookies are used on this site." />
+  <meta name="description" content="Mailzy's settings — what's configurable today (appearance) and why there isn't more, given there are no accounts to attach preferences to." />
   <meta name="robots" content="index, follow" />
   <meta name="theme-color" content="#000000" />
-  <link rel="canonical" href="https://tempmailzy.github.io/privacy.html" />
+  <link rel="canonical" href="https://tempmailzy.github.io/settings.html" />
   <meta name="google-adsense-account" content="ca-pub-9466250545587012" />
 
   <link rel="icon" href="favicon.svg" type="image/svg+xml" />
@@ -67,7 +67,7 @@
           <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v14M5 12h14" /></svg>
           <span>Generate New</span>
         </a>
-        <a class="sidebar__item" href="settings.html">
+        <a class="sidebar__item is-active" href="settings.html">
           <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3" /><path d="M12 1v4M12 19v4M4.2 4.2l2.9 2.9M16.9 16.9l2.9 2.9M1 12h4M19 12h4M4.2 19.8l2.9-2.9M16.9 7.1l2.9-2.9" /></svg>
           <span>Settings</span>
         </a>
@@ -96,7 +96,7 @@
           <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" /></svg>
           <span>Privacy Guide</span>
         </a>
-        <a class="sidebar__item is-active" href="privacy.html">
+        <a class="sidebar__item" href="privacy.html">
           <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" /></svg>
           <span>Privacy Policy</span>
         </a>
@@ -115,91 +115,50 @@
 
     <main class="shell__main">
       <article class="legal-page">
-      <h1>Privacy Policy</h1>
-      <p class="legal-updated">Last updated: September 2026</p>
+      <h1>Settings</h1>
+      <p class="legal-updated">There isn't much here yet &mdash; on purpose.</p>
 
       <section>
-        <h2>The short version</h2>
+        <h2>Appearance</h2>
         <p>
-          Mailzy has no accounts, no sign-up, and no server-side database. We don't collect your name,
-          your real email address, or any personal information, because we never ask for any. What
-          follows is the specific, non-generic detail on what actually happens when you use this site.
+          Light or dark mode is controlled from the toggle in the top-right of every page, not from a
+          separate settings form &mdash; it's a single click either way. Your choice is saved in this
+          browser's local storage, so it's remembered on your next visit. Nothing else about your
+          preferences is tracked or synced anywhere.
         </p>
       </section>
 
       <section>
-        <h2>The temporary mailbox (mail.gw, with a disclosed backup)</h2>
+        <h2>Why there isn't more here</h2>
         <p>
-          When you load Mailzy, your browser creates a temporary mailbox directly with
-          <a href="https://mail.gw" rel="noopener noreferrer" target="_blank">mail.gw</a>, an independent
-          third-party email service and Mailzy's priority provider. Mailzy itself never sees, stores, or
-          has access to the address, password, or any message content &mdash; that data lives with
-          mail.gw and travels directly between your browser and their servers. Review
-          <a href="https://mail.gw" rel="noopener noreferrer" target="_blank">mail.gw's own terms</a>
-          for how they handle it on their end. If mail.gw is temporarily unreachable, your browser
-          automatically requests a mailbox from a backup provider,
-          <a href="https://www.guerrillamail.com" rel="noopener noreferrer" target="_blank">Guerrilla Mail</a>,
-          instead &mdash; this switch is always shown on screen when it happens, never silent, and the
-          same "your browser talks directly to the provider" rule applies to it too. Messages sent to a
-          Mailzy address, from either provider, are not private: anyone who has or guesses the address
-          can read what's delivered to it.
+          Mailzy has no accounts, so there's nothing to attach persistent per-user settings to &mdash; no
+          profile, no saved addresses, no notification preferences, because none of that is stored on any
+          server of ours to begin with. Options like a preferred mail provider, a custom polling interval,
+          or a default retention length would all be reasonable things to offer eventually, but each one
+          would need to live somewhere, and "somewhere" today means either your browser's local storage or
+          an account system &mdash; the exact trade-off explained on the <a href="about.html">About</a>
+          page. If settings like that are added, this page is where they'll show up, and the
+          <a href="privacy.html">Privacy Policy</a> will be updated to say exactly what's newly stored and
+          why.
         </p>
       </section>
 
       <section>
-        <h2>What we store in your browser</h2>
+        <h2>Mail provider</h2>
         <p>
-          Mailzy saves exactly one thing in your browser's local storage: your light/dark theme
-          preference, so it's remembered on your next visit. That's it &mdash; the active temporary
-          address itself is deliberately <em>not</em> saved anywhere; closing the tab discards it.
+          There's no provider toggle here because there's nothing to choose: mail.gw is always the
+          priority provider, and the backup (Guerrilla Mail) only ever activates automatically, and only
+          when mail.gw itself is unreachable &mdash; disclosed on screen every time it happens. See
+          <a href="how-it-works.html">How It Works</a> for the full detail on that behavior.
         </p>
       </section>
 
       <section>
-        <h2>Advertising (Google AdSense)</h2>
+        <h2>Clearing local data</h2>
         <p>
-          This site displays ads served by Google AdSense. Google and its partners may use cookies and
-          similar technologies to serve ads based on your prior visits to this or other websites. You
-          can review how Google uses this data at
-          <a href="https://policies.google.com/technologies/partner-sites" rel="noopener noreferrer" target="_blank">
-            How Google uses information from sites that use its services
-          </a>,
-          and opt out of personalized advertising through
-          <a href="https://adssettings.google.com/" rel="noopener noreferrer" target="_blank">Google Ads Settings</a>.
-          Third-party vendors, including Google, may also use cookies to serve ads based on someone's
-          past visits to this site.
-        </p>
-      </section>
-
-      <section>
-        <h2>Analytics</h2>
-        <p>
-          Mailzy does not currently run any analytics or tracking scripts of its own. If that changes,
-          this page will be updated to say exactly what was added and why.
-        </p>
-      </section>
-
-      <section>
-        <h2>Children's privacy</h2>
-        <p>
-          Mailzy is not directed at children under 13, and we do not knowingly collect information from
-          them.
-        </p>
-      </section>
-
-      <section>
-        <h2>Changes to this policy</h2>
-        <p>
-          If this policy changes, the "Last updated" date at the top of this page will change with it.
-          Material changes will be reflected in plain language here, not buried in legal boilerplate.
-        </p>
-      </section>
-
-      <section>
-        <h2>Contact</h2>
-        <p>
-          Questions, concerns, or corrections about this policy are welcome &mdash; see the
-          <a href="contact.html">Contact Us</a> page.
+          Since the only thing Mailzy stores in your browser is the theme preference, clearing it is as
+          simple as clearing this site's data from your browser's own settings &mdash; there's no
+          in-app "delete my data" button because there's nothing else to delete.
         </p>
       </section>
       </article>
