@@ -1,0 +1,168 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>How It Works — Mailzy</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="description" content="A step-by-step technical walkthrough of how Mailzy generates a temporary email address, polls for mail, and keeps everything client-side." />
+  <meta name="robots" content="index, follow" />
+  <meta name="theme-color" content="#0b0c14" />
+  <link rel="canonical" href="https://tempmailzy.github.io/how-it-works.html" />
+  <meta name="google-adsense-account" content="ca-pub-9466250545587012" />
+
+  <link rel="icon" href="favicon.svg" type="image/svg+xml" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap"
+    rel="stylesheet"
+  />
+  <link rel="stylesheet" href="css/styles.css" />
+
+  <script>
+    (function () {
+      try {
+        var stored = localStorage.getItem('theme');
+        document.documentElement.dataset.theme = stored === 'light' ? 'light' : 'dark';
+      } catch (e) {
+        document.documentElement.dataset.theme = 'dark';
+      }
+    })();
+  </script>
+</head>
+<body>
+  <nav class="topnav">
+    <div class="topnav__inner">
+      <a class="brand" href="index.html" style="text-decoration: none;">
+        <span class="brand-mark" aria-hidden="true">
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M6 17V7l6 7 6-7v10" />
+          </svg>
+        </span>
+        <span class="brand-name">Mail<span class="brand-accent">zy</span></span>
+      </a>
+
+      <div class="nav-actions">
+        <button type="button" class="theme-toggle" id="themeToggleBtn" aria-pressed="false">
+          <span class="theme-toggle__icon" id="themeToggleIcon" aria-hidden="true">🌙</span>
+          <span id="themeToggleLabel">Dark Mode</span>
+        </button>
+      </div>
+    </div>
+  </nav>
+
+  <div class="page">
+    <main class="legal-page">
+      <h1>How It Works</h1>
+      <p class="legal-updated">The real technical flow, step by step &mdash; not a marketing summary.</p>
+
+      <section>
+        <p>
+          Mailzy runs entirely in your browser. There's no account system, no database, and no server of
+          ours processing anything in the middle. Here's exactly what happens, in order, from the moment
+          you load the page to the moment a message shows up.
+        </p>
+      </section>
+
+      <section>
+        <h2>The five steps</h2>
+        <ol>
+          <li>
+            <strong>An address is generated the moment you arrive.</strong>
+            As soon as the page loads, your browser fetches a list of currently active domains from
+            mail.gw, picks one at random, and generates a random local part &mdash; a handful of lowercase
+            letters followed by a few digits. If that exact combination happens to already be taken (rare,
+            but possible), Mailzy quietly retries with a new random string, up to three times, before
+            giving up and showing an error.
+          </li>
+          <li>
+            <strong>Your browser holds the only key, and only in memory.</strong>
+            Once the address is created, mail.gw issues a session token tied to it. That token is kept in
+            a plain JavaScript variable in your browser's memory &mdash; not in a cookie, not in
+            localStorage, not anywhere that survives a page refresh. Close or reload the tab, and that
+            token (and the address) is gone for good. That's a deliberate design choice, not an
+            oversight: a "temporary" inbox that quietly persists across sessions would defeat the point.
+          </li>
+          <li>
+            <strong>Incoming mail is polled, not pushed.</strong>
+            There's no live push connection telling Mailzy the instant something arrives. Instead, your
+            browser asks mail.gw "anything new?" roughly every seven seconds, for as long as the tab stays
+            open and visible. If you switch to another tab, polling pauses automatically &mdash; there's
+            no reason to keep hammering a free API for a page nobody's looking at &mdash; and it resumes
+            the moment you switch back.
+          </li>
+          <li>
+            <strong>Messages are rendered as plain text, always.</strong>
+            This one matters for security, not just functionality. Anyone on the internet can send an
+            email to a Mailzy address, and that email can contain arbitrary HTML and even embedded
+            scripts. Mailzy never inserts message content into the page as HTML &mdash; every message body
+            is parsed off-screen and only its plain text is extracted and displayed. A malicious email
+            can't run code in your browser through Mailzy, because Mailzy never gives it the chance to.
+          </li>
+          <li>
+            <strong>The address expires &mdash; by design, not by accident.</strong>
+            mail.gw has its own retention policy for how long a mailbox and its messages are kept; Mailzy
+            shows that live as the "Retention Period" bar on the Inbox page, calculated from real
+            timestamps the API returns, not a decorative countdown. Once that window closes, or the moment
+            you click "New address," the old mailbox is gone and a fresh one takes its place.
+          </li>
+        </ol>
+      </section>
+
+      <section>
+        <h2>What Mailzy deliberately doesn't do</h2>
+        <p>
+          It doesn't retry silently against a different provider if mail.gw is unreachable &mdash; if the
+          service is down, you'll see an honest error message and a manual retry button, not a
+          quietly-swapped-in replacement. It doesn't send email, only receive it. And it doesn't keep any
+          record of an address after you leave it behind; there's no history, no "recent addresses" list,
+          nothing to look back on later.
+        </p>
+      </section>
+
+      <section>
+        <h2>Want more detail?</h2>
+        <p>
+          The <a href="about.html">About</a> page covers the reasoning behind these choices, and the
+          <a href="faq.html">FAQ</a> answers the specific questions that come up most &mdash; including
+          why some websites reject temporary email addresses outright.
+        </p>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <p class="site-footer__links">
+        <a href="index.html">Inbox</a>
+        <a href="about.html">About</a>
+        <a href="faq.html">FAQ</a>
+        <a href="privacy.html">Privacy Policy</a>
+        <a href="contact.html">Contact Us</a>
+      </p>
+      <p>&copy; <span id="footerYear"></span> Mailzy.</p>
+    </footer>
+  </div>
+
+  <script>
+    var fy = document.getElementById('footerYear');
+    if (fy) fy.textContent = new Date().getFullYear();
+
+    var btn = document.getElementById('themeToggleBtn');
+    var icon = document.getElementById('themeToggleIcon');
+    var label = document.getElementById('themeToggleLabel');
+    function applyTheme(theme) {
+      document.documentElement.dataset.theme = theme;
+      try {
+        localStorage.setItem('theme', theme);
+      } catch (e) {}
+      icon.textContent = theme === 'light' ? '☀️' : '🌙';
+      label.textContent = theme === 'light' ? 'Light Mode' : 'Dark Mode';
+      btn.setAttribute('aria-pressed', theme === 'light' ? 'true' : 'false');
+    }
+    btn.addEventListener('click', function () {
+      var current = document.documentElement.dataset.theme === 'light' ? 'light' : 'dark';
+      applyTheme(current === 'light' ? 'dark' : 'light');
+    });
+    applyTheme(document.documentElement.dataset.theme === 'light' ? 'light' : 'dark');
+  </script>
+</body>
+</html>

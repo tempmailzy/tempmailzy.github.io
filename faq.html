@@ -1,0 +1,267 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>FAQ — Mailzy</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="description" content="Answers to the questions people actually ask about Mailzy — privacy, retention, why some sites block temporary email, and how the mailbox really works." />
+  <meta name="robots" content="index, follow" />
+  <meta name="theme-color" content="#0b0c14" />
+  <link rel="canonical" href="https://tempmailzy.github.io/faq.html" />
+  <meta name="google-adsense-account" content="ca-pub-9466250545587012" />
+
+  <link rel="icon" href="favicon.svg" type="image/svg+xml" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap"
+    rel="stylesheet"
+  />
+  <link rel="stylesheet" href="css/styles.css" />
+
+  <!-- FAQPage structured data — matches the visible content below
+       exactly; nothing here that isn't also written out on the page. -->
+  <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "Is Mailzy private?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "No. Anyone who has, or correctly guesses, your temporary address can read what's sent to it — that's how the underlying public mail API works. Don't use it for password resets, account recovery, financial mail, or anything else you'd be upset to lose or have someone else read."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "How long does my temporary address last?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "As long as mail.gw's own retention window stays open — shown live on the Inbox page as the Retention Period bar, calculated from real account timestamps. Closing the tab doesn't delete the mailbox on mail.gw's side immediately, but Mailzy itself forgets the address the moment the tab closes, since nothing is saved locally."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Why did a website reject my Mailzy address?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Many services maintain blocklists of known disposable-email domains specifically to prevent free-trial abuse and fake signups. This is the target site's own policy decision, not a Mailzy bug, and it affects every free temporary-email tool, not just this one. If you need an address a strict verification site will accept, use your real email, or a free alias/forwarding service like Firefox Relay or SimpleLogin."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Can I send email from a Mailzy address?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "No — it's receive-only. Mailzy uses mail.gw purely to generate and check an inbox; there is no compose or send functionality, and no plan to add one, since it would require handling outbound mail infrastructure this project deliberately avoids."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Who actually runs the mailbox?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "mail.gw, a free third-party email API. Mailzy is a client-side interface to it — we don't operate any mail infrastructure ourselves, and mail.gw's own reliability and policies apply directly to your mailbox."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Does Mailzy use cookies or track me?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Mailzy itself has no accounts, no analytics, and no tracking scripts. The only thing stored locally is your light/dark theme preference. If this page displays ads, the ad provider may use its own cookies for ad personalization — details are in the Privacy Policy."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Why does refreshing the page give me a new address?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Because nothing about your active mailbox is saved anywhere — not in a cookie, not in local storage, not on a server. That's deliberate: a disposable inbox that quietly survives a refresh would be a mild contradiction of the entire idea."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Is Mailzy free?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Yes, fully free, with no paid tier currently offered. If a paid tier is added later — for example, custom domains or longer-lived inboxes — it would be a clearly disclosed, separate addition, not a change to how the free version already works."
+          }
+        }
+      ]
+    }
+  </script>
+
+  <script>
+    (function () {
+      try {
+        var stored = localStorage.getItem('theme');
+        document.documentElement.dataset.theme = stored === 'light' ? 'light' : 'dark';
+      } catch (e) {
+        document.documentElement.dataset.theme = 'dark';
+      }
+    })();
+  </script>
+</head>
+<body>
+  <nav class="topnav">
+    <div class="topnav__inner">
+      <a class="brand" href="index.html" style="text-decoration: none;">
+        <span class="brand-mark" aria-hidden="true">
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M6 17V7l6 7 6-7v10" />
+          </svg>
+        </span>
+        <span class="brand-name">Mail<span class="brand-accent">zy</span></span>
+      </a>
+
+      <div class="nav-actions">
+        <button type="button" class="theme-toggle" id="themeToggleBtn" aria-pressed="false">
+          <span class="theme-toggle__icon" id="themeToggleIcon" aria-hidden="true">🌙</span>
+          <span id="themeToggleLabel">Dark Mode</span>
+        </button>
+      </div>
+    </div>
+  </nav>
+
+  <div class="page">
+    <main class="legal-page">
+      <h1>Frequently Asked Questions</h1>
+      <p class="legal-updated">The real questions people run into, answered directly.</p>
+
+      <section>
+        <dl>
+          <div>
+            <dt>Is Mailzy private?</dt>
+            <dd>
+              No. Anyone who has, or correctly guesses, your temporary address can read what's sent to
+              it &mdash; that's fundamentally how the underlying public mail API works, and no interface
+              on top of it changes that fact. Don't use it for password resets, account recovery,
+              financial mail, or anything else you'd be upset to lose or have someone else read.
+            </dd>
+          </div>
+
+          <div>
+            <dt>How long does my temporary address last?</dt>
+            <dd>
+              As long as mail.gw's own retention window stays open &mdash; shown live on the Inbox page
+              as the "Retention Period" bar, calculated from the real account timestamps the API returns,
+              not a decorative countdown. Closing the tab doesn't necessarily delete the mailbox on
+              mail.gw's side right away, but Mailzy itself forgets the address the instant the tab
+              closes, since nothing about it is saved locally.
+            </dd>
+          </div>
+
+          <div>
+            <dt>Why did a website reject my Mailzy address?</dt>
+            <dd>
+              Many services &mdash; especially ones that require identity verification, like AI tools,
+              financial platforms, or subscription services &mdash; maintain blocklists of known
+              disposable-email domains, specifically to prevent free-trial abuse and fake signups. That's
+              the target site's own policy decision, not a Mailzy bug, and it affects every free
+              temporary-email tool that exists, not just this one; even established competitors reserve
+              their "less detectable" domains for paying customers. If you genuinely need an address a
+              strict verification site will accept, your real email is the only fully reliable option, or
+              consider a free email-masking service like Firefox Relay or SimpleLogin for a middle
+              ground &mdash; see <a href="about.html">About</a> for more on this trade-off.
+            </dd>
+          </div>
+
+          <div>
+            <dt>Can I send email from a Mailzy address?</dt>
+            <dd>
+              No &mdash; it's receive-only. Mailzy uses mail.gw purely to generate and poll an inbox;
+              there's no compose or send functionality, and no plan to add one, since that would mean
+              taking on outbound mail infrastructure and deliverability concerns this project deliberately
+              stays away from.
+            </dd>
+          </div>
+
+          <div>
+            <dt>Who actually runs the mailbox?</dt>
+            <dd>
+              <a href="https://mail.gw" rel="noopener noreferrer" target="_blank">mail.gw</a>, a free
+              third-party email API. Mailzy is a client-side interface to it &mdash; we don't operate any
+              mail infrastructure ourselves, which also means mail.gw's own uptime and policies apply
+              directly to your mailbox. When mail.gw is down, Mailzy shows an honest error rather than
+              pretending otherwise.
+            </dd>
+          </div>
+
+          <div>
+            <dt>Does Mailzy use cookies or track me?</dt>
+            <dd>
+              Mailzy itself has no accounts, no analytics, and no tracking scripts. The only thing stored
+              in your browser is your light/dark theme preference, in local storage. If this page
+              displays ads, the ad provider may use its own cookies for ad personalization &mdash; full
+              detail is in the <a href="privacy.html">Privacy Policy</a>.
+            </dd>
+          </div>
+
+          <div>
+            <dt>Why does refreshing the page give me a new address?</dt>
+            <dd>
+              Because nothing about your active mailbox is saved anywhere &mdash; not in a cookie, not in
+              local storage, not on a server we control. That's deliberate: a disposable inbox that
+              quietly survives a page refresh would be a mild contradiction of the entire idea.
+            </dd>
+          </div>
+
+          <div>
+            <dt>Is Mailzy free?</dt>
+            <dd>
+              Yes, fully free, with no paid tier currently offered. If one is added later &mdash; for
+              example, custom domains or longer-lived inboxes &mdash; it would be a clearly disclosed,
+              separate addition, not a silent change to how the free version already works.
+            </dd>
+          </div>
+        </dl>
+      </section>
+
+      <section>
+        <h2>Didn't find your answer?</h2>
+        <p>
+          See <a href="how-it-works.html">How It Works</a> for the full technical walkthrough, or
+          <a href="contact.html">get in touch</a> directly.
+        </p>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <p class="site-footer__links">
+        <a href="index.html">Inbox</a>
+        <a href="about.html">About</a>
+        <a href="how-it-works.html">How It Works</a>
+        <a href="privacy.html">Privacy Policy</a>
+        <a href="contact.html">Contact Us</a>
+      </p>
+      <p>&copy; <span id="footerYear"></span> Mailzy.</p>
+    </footer>
+  </div>
+
+  <script>
+    var fy = document.getElementById('footerYear');
+    if (fy) fy.textContent = new Date().getFullYear();
+
+    var btn = document.getElementById('themeToggleBtn');
+    var icon = document.getElementById('themeToggleIcon');
+    var label = document.getElementById('themeToggleLabel');
+    function applyTheme(theme) {
+      document.documentElement.dataset.theme = theme;
+      try {
+        localStorage.setItem('theme', theme);
+      } catch (e) {}
+      icon.textContent = theme === 'light' ? '☀️' : '🌙';
+      label.textContent = theme === 'light' ? 'Light Mode' : 'Dark Mode';
+      btn.setAttribute('aria-pressed', theme === 'light' ? 'true' : 'false');
+    }
+    btn.addEventListener('click', function () {
+      var current = document.documentElement.dataset.theme === 'light' ? 'light' : 'dark';
+      applyTheme(current === 'light' ? 'dark' : 'light');
+    });
+    applyTheme(document.documentElement.dataset.theme === 'light' ? 'light' : 'dark');
+  </script>
+</body>
+</html>

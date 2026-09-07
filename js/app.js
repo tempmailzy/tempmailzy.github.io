@@ -38,7 +38,7 @@
     toastRegion: document.getElementById('toastRegion'),
   };
 
-  /** @type {{provider:'mailgw'|'guerrillamail', token?:string, account?:object, sidToken?:string, address:string, createdAt:string|number, retentionAt:string|number, messages:object[], loadedPages:number, totalItems:number|null}|null} */
+  /** @type {{token:string, account:object, address:string, messages:object[], loadedPages:number, totalItems:number|null}|null} */
   let session = null;
   let loadMoreInFlight = false;
   let pollTimer = null;
@@ -74,64 +74,22 @@
     return 'The mail service is temporarily unavailable.';
   }
 
-  /** Tries mail.gw first (the primary provider). Only on failure does it
-   *  fall back to Guerrilla Mail — and js/app.js always discloses which
-   *  one is active via updateProviderBadge(), never silently. If BOTH
-   *  fail, the mail.gw error is what surfaces, since that's the more
-   *  informative one for troubleshooting the primary path. */
-  async function createInboxWithFailover() {
-    try {
-      const { account, address, password } = await MailTm.createAccountWithRetry(3);
-      const token = await MailTm.getToken(address, password);
-      return {
-        provider: 'mailgw',
-        token,
-        account,
-        address,
-        createdAt: account.createdAt,
-        retentionAt: account.retentionAt,
-      };
-    } catch (primaryErr) {
-      try {
-        const inbox = await GuerrillaMail.createInbox();
-        return {
-          provider: 'guerrillamail',
-          sidToken: inbox.sidToken,
-          address: inbox.address,
-          createdAt: inbox.createdAt,
-          retentionAt: inbox.retentionAt,
-        };
-      } catch (backupErr) {
-        throw primaryErr;
-      }
-    }
-  }
-
   async function init() {
     stopPolling();
     showLoading();
     try {
-      const inbox = await createInboxWithFailover();
-      session = {
-        provider: inbox.provider,
-        token: inbox.token,
-        account: inbox.account,
-        sidToken: inbox.sidToken,
-        address: inbox.address,
-        messages: [],
-        loadedPages: 0,
-        totalItems: null,
-      };
-      els.addressField.value = inbox.address;
+      const { account, address, password } = await MailTm.createAccountWithRetry(3);
+      const token = await MailTm.getToken(address, password);
+      session = { token, account, address, messages: [], loadedPages: 0, totalItems: null };
+      els.addressField.value = address;
       els.copyBtnLabel.textContent = 'Copy';
       els.inboxStatus.textContent = 'Waiting for incoming mail…';
       els.messageList.innerHTML = '';
       els.unreadBadge.hidden = true;
       els.loadMoreBtn.hidden = true;
-      updateProviderBadge(inbox.provider);
       showTicket();
       startPolling({ immediate: true });
-      startCountdown({ createdAt: inbox.createdAt, retentionAt: inbox.retentionAt });
+      startCountdown(account);
     } catch (err) {
       session = null;
       stopCountdown();
@@ -139,71 +97,13 @@
     }
   }
 
-  /** Deliberately a no-op now: the owner asked not to disclose the
-   *  backup provider to site visitors. The call site in init() is kept
-   *  so re-enabling this later (or logging it somewhere internal) is a
-   *  one-function change, not a re-plumb. session.provider itself is
-   *  still tracked either way — only the on-page disclosure was removed. */
-  function updateProviderBadge(provider) {
-    void provider;
-  }
-
-  /** Dispatches to whichever provider actually created this session,
-   *  normalizing Guerrilla Mail's different field names into the same
-   *  shape mail.gw already uses, so renderMessageList/openMessage don't
-   *  need to know which provider is active. */
-  function normalizeMessage(raw) {
-    if (session.provider !== 'guerrillamail') return raw;
-    return {
-      id: String(raw.mail_id),
-      from: { name: null, address: raw.mail_from },
-      subject: htmlToPlainText(raw.mail_subject || '') || raw.mail_subject || '',
-      intro: htmlToPlainText(raw.mail_excerpt || '') || raw.mail_excerpt || '',
-      seen: Number(raw.mail_read) !== 0,
-      createdAt: raw.mail_timestamp ? new Date(raw.mail_timestamp * 1000).toISOString() : null,
-    };
-  }
-
-  // Guerrilla Mail auto-injects this system "welcome" message into every
-  // new inbox. Showing it would name the backup provider in the message
-  // list itself — the exact disclosure the owner asked to remove from
-  // the UI (see updateProviderBadge) — so it's filtered out here rather
-  // than left for the badge removal to be undermined by an actual email.
-  const GUERRILLA_SYSTEM_SENDER = 'no-reply@guerrillamail.com';
-
-  async function providerListMessages(page) {
-    if (session.provider === 'guerrillamail') {
-      const { messages, totalItems } = await GuerrillaMail.listMessages(session.sidToken);
-      const realMessages = messages.filter((m) => m.mail_from !== GUERRILLA_SYSTEM_SENDER);
-      return { messages: realMessages.map(normalizeMessage), totalItems };
-    }
-    return MailTm.listMessages(session.token, page);
-  }
-
-  async function providerGetMessage(id) {
-    if (session.provider === 'guerrillamail') {
-      return GuerrillaMail.getMessage(session.sidToken, id);
-    }
-    return MailTm.getMessage(session.token, id);
-  }
-
-  function providerDeleteInbox(closedSession) {
-    if (!closedSession) return;
-    if (closedSession.provider === 'guerrillamail') {
-      GuerrillaMail.forgetInbox(closedSession.sidToken, closedSession.address);
-    } else {
-      MailTm.deleteAccount(closedSession.token, closedSession.account.id);
-    }
-  }
-
-  /** Ticks the retention indicator off the active provider's own
-   *  createdAt/retentionAt — a real value either way (mail.gw's account
-   *  fields, or Guerrilla Mail's documented fixed 1-hour policy), not a
+  /** Ticks the retention indicator off mail.gw's own createdAt/
+   *  retentionAt fields on the account — a real value, not a
    *  decorative countdown with nothing behind it. */
-  function startCountdown(retentionInfo) {
+  function startCountdown(account) {
     stopCountdown();
-    const created = new Date(retentionInfo.createdAt).getTime();
-    const expires = new Date(retentionInfo.retentionAt).getTime();
+    const created = new Date(account.createdAt).getTime();
+    const expires = new Date(account.retentionAt).getTime();
     if (!Number.isFinite(created) || !Number.isFinite(expires) || expires <= created) {
       els.expiryText.textContent = 'unknown';
       els.expiryBarFill.style.width = '100%';
@@ -314,7 +214,7 @@
     if (!session || pollInFlight) return;
     pollInFlight = true;
     try {
-      const { messages, totalItems } = await providerListMessages(1);
+      const { messages, totalItems } = await MailTm.listMessages(session.token, 1);
       session.totalItems = totalItems;
       if (session.loadedPages === 0) session.loadedPages = 1;
       const isFirstLoad = session.messages.length === 0;
@@ -355,7 +255,7 @@
     els.loadMoreBtn.classList.add('is-loading');
     try {
       const nextPage = session.loadedPages + 1;
-      const { messages, totalItems } = await providerListMessages(nextPage);
+      const { messages, totalItems } = await MailTm.listMessages(session.token, nextPage);
       session.totalItems = totalItems;
       session.loadedPages = nextPage;
       mergeMessages(messages, { prepend: false });
@@ -447,29 +347,23 @@
   async function openMessage(id) {
     if (!session) return;
     try {
-      const full = await providerGetMessage(id);
+      const full = await MailTm.getMessage(session.token, id);
       lastFocusedEl = document.activeElement;
 
-      if (session.provider === 'guerrillamail') {
-        els.messageFrom.textContent = full.mail_from || 'Unknown sender';
-        els.messageSubject.textContent = htmlToPlainText(full.mail_subject || '') || '(no subject)';
-        els.messageBody.textContent = htmlToPlainText(full.mail_body || '') || '(no readable content)';
-      } else {
-        els.messageFrom.textContent = (full.from && (full.from.name ? `${full.from.name} <${full.from.address}>` : full.from.address)) || 'Unknown sender';
-        els.messageSubject.textContent = full.subject || '(no subject)';
+      els.messageFrom.textContent = (full.from && (full.from.name ? `${full.from.name} <${full.from.address}>` : full.from.address)) || 'Unknown sender';
+      els.messageSubject.textContent = full.subject || '(no subject)';
 
-        let bodyText = '';
-        if (typeof full.text === 'string' && full.text.trim()) {
-          bodyText = full.text;
-        } else if (typeof full.html === 'string' && full.html.trim()) {
-          bodyText = htmlToPlainText(full.html);
-        } else if (Array.isArray(full.html) && full.html.length) {
-          bodyText = htmlToPlainText(full.html.join('\n'));
-        } else {
-          bodyText = '(no readable content)';
-        }
-        els.messageBody.textContent = bodyText;
+      let bodyText = '';
+      if (typeof full.text === 'string' && full.text.trim()) {
+        bodyText = full.text;
+      } else if (typeof full.html === 'string' && full.html.trim()) {
+        bodyText = htmlToPlainText(full.html);
+      } else if (Array.isArray(full.html) && full.html.length) {
+        bodyText = htmlToPlainText(full.html.join('\n'));
+      } else {
+        bodyText = '(no readable content)';
       }
+      els.messageBody.textContent = bodyText;
 
       els.messageOverlay.hidden = false;
       els.closeMessageBtn.focus();
@@ -567,9 +461,11 @@
     stopCountdown();
     const old = session;
     session = null;
-    // Best-effort — burning the old mailbox isn't guaranteed,
-    // it's disposable regardless of whether this succeeds.
-    providerDeleteInbox(old);
+    if (old) {
+      // Best-effort — burning the old mailbox isn't guaranteed,
+      // it's disposable regardless of whether this succeeds.
+      MailTm.deleteAccount(old.token, old.account.id);
+    }
     await init();
     if (session) showToast('New address issued', 'refresh');
   }

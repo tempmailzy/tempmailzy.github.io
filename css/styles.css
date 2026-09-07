@@ -1111,12 +1111,39 @@ a {
   line-height: 1.65;
 }
 
-.legal-page ul {
+.legal-page ul,
+.legal-page ol {
   margin: 0;
-  padding-left: 1.2em;
+  padding-left: 1.3em;
   display: flex;
   flex-direction: column;
-  gap: var(--space-2);
+  gap: var(--space-3);
+}
+
+.legal-page ol > li::marker {
+  font-weight: 700;
+  color: var(--accent);
+}
+
+.legal-page dl {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+}
+
+.legal-page dt {
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: var(--space-1);
+  font-size: 0.96rem;
+}
+
+.legal-page dd {
+  margin: 0;
+  color: var(--text-soft);
+  font-size: 0.9rem;
+  line-height: 1.7;
 }
 
 /* :not(.btn) — otherwise this beats .btn--primary's own color by
