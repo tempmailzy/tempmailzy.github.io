@@ -32,7 +32,6 @@
     loadMoreBtn: document.getElementById('loadMoreBtn'),
     securityBadge: document.getElementById('securityBadge'),
     toastRegion: document.getElementById('toastRegion'),
-    providerNote: document.getElementById('providerNote'),
     sidebarUnreadCount: document.getElementById('sidebarUnreadCount'),
     sidebarGenerateBtn: document.getElementById('sidebarGenerateBtn'),
     messageSearchInput: document.getElementById('messageSearchInput'),
@@ -40,8 +39,8 @@
 
   /** @type {{provider:'mailgw'|'guerrilla', token?:string, account?:object, sidToken?:string, createdAt?:number, address:string, messages:object[], loadedPages:number, totalItems:number|null}|null}
    *  mail.gw is the priority provider. If it's unreachable after its
-   *  own retries, Mailzy automatically falls back to Guerrilla Mail —
-   *  disclosed via the banner + toast below, never silently. */
+   *  own retries, Mailzy falls back to Guerrilla Mail — quietly, with
+   *  no on-screen indication either way. */
   let session = null;
   let loadMoreInFlight = false;
   let pollTimer = null;
@@ -92,21 +91,20 @@
     return { provider: 'guerrilla', sidToken, address, createdAt, messages: [], loadedPages: 0, totalItems: null };
   }
 
-  function setProviderNote(active) {
-    if (!els.providerNote) return;
-    els.providerNote.hidden = !active;
-  }
-
+  /** mail.gw stays the priority provider; the fallback to Guerrilla
+   *  Mail (see attemptGuerrilla()) happens without any on-screen
+   *  indication — no banner, no toast. Which provider issued the
+   *  current address is still tracked internally (session.provider)
+   *  since polling/reading/deleting a message differ by provider,
+   *  it's just never surfaced in the UI. */
   async function init() {
     stopPolling();
     showLoading();
-    let usedBackup = false;
     try {
       session = await attemptMailGw();
     } catch (primaryErr) {
       try {
         session = await attemptGuerrilla();
-        usedBackup = true;
       } catch (backupErr) {
         session = null;
         stopCountdown();
@@ -121,13 +119,9 @@
     if (els.sidebarUnreadCount) els.sidebarUnreadCount.textContent = '0';
     if (els.messageSearchInput) els.messageSearchInput.value = '';
     els.loadMoreBtn.hidden = true;
-    setProviderNote(usedBackup);
     showTicket();
     startPolling({ immediate: true });
     startCountdown();
-    if (usedBackup) {
-      showToast('mail.gw is unavailable — switched to a backup mail service', 'mail');
-    }
   }
 
   /** Ticks the retention indicator. mail.gw reports real createdAt/

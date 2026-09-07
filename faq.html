@@ -63,7 +63,7 @@
           "name": "Who actually runs the mailbox?",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "mail.gw, a free third-party email API, is the priority provider. If it's unreachable, Mailzy automatically and visibly switches to a backup provider, Guerrilla Mail, so the tool keeps working during an outage — disclosed on screen every time, never silent."
+            "text": "mail.gw, a free third-party email API, is the priority provider. If it's unreachable, Mailzy automatically switches to a backup provider, Guerrilla Mail, so the tool keeps working during an outage — the switch happens quietly in the background, with no separate on-screen notice."
           }
         },
         {
@@ -252,10 +252,11 @@
               third-party email API, and it's the priority provider &mdash; every address starts there.
               Mailzy is a client-side interface to it, so mail.gw's own uptime and policies apply directly
               to your mailbox. If mail.gw is unreachable, Mailzy automatically switches to a backup
-              provider, Guerrilla Mail, instead of going dark &mdash; this is always disclosed on screen
-              (a banner above your address, plus a toast) the moment it happens, never silent. The backup
-              has its own fixed 1-hour retention, shown honestly rather than borrowed from mail.gw's. If
-              both are down at once, Mailzy shows an honest error rather than pretending otherwise.
+              provider, Guerrilla Mail, instead of going dark &mdash; that switch happens quietly in the
+              background, with no separate banner or notification. The backup has its own fixed 1-hour
+              retention, still reflected accurately in the Retention Period bar rather than borrowed from
+              mail.gw's longer one. If both are down at once, Mailzy shows an honest error rather than
+              pretending otherwise.
             </dd>
           </div>
 
