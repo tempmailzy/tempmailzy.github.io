@@ -36,9 +36,13 @@
     loadMoreBtn: document.getElementById('loadMoreBtn'),
     securityBadge: document.getElementById('securityBadge'),
     toastRegion: document.getElementById('toastRegion'),
+    providerNote: document.getElementById('providerNote'),
   };
 
-  /** @type {{token:string, account:object, address:string, messages:object[], loadedPages:number, totalItems:number|null}|null} */
+  /** @type {{provider:'mailgw'|'guerrilla', token?:string, account?:object, sidToken?:string, createdAt?:number, address:string, messages:object[], loadedPages:number, totalItems:number|null}|null}
+   *  mail.gw is the priority provider. If it's unreachable after its
+   *  own retries, Mailzy automatically falls back to Guerrilla Mail —
+   *  disclosed via the banner + toast below, never silently. */
   let session = null;
   let loadMoreInFlight = false;
   let pollTimer = null;
@@ -67,43 +71,80 @@
 
   function friendlyError(err) {
     if (err && err.name === 'MailTmError') {
-      if (err.status === 429) return 'The mail service is temporarily rate-limiting requests. Please try again shortly.';
-      if (typeof err.status === 'number' && err.status >= 500) return 'The mail service is experiencing an outage.';
-      return err.message || 'The mail service is temporarily unavailable.';
+      if (err.status === 429) return 'The mail service is temporarily rate-limiting requests, and the backup service is unavailable too. Please try again shortly.';
+      if (typeof err.status === 'number' && err.status >= 500) return 'The mail service is experiencing an outage, and the backup service is unavailable too.';
+      return (err.message || 'The mail service is temporarily unavailable') + ', and the backup service is unavailable too.';
     }
-    return 'The mail service is temporarily unavailable.';
+    return 'The mail service is temporarily unavailable, and the backup service is unavailable too.';
+  }
+
+  /** Attempts the priority provider, mail.gw. Throws on failure —
+   *  caller decides whether to fall back. */
+  async function attemptMailGw() {
+    const { account, address, password } = await MailTm.createAccountWithRetry(3);
+    const token = await MailTm.getToken(address, password);
+    return { provider: 'mailgw', token, account, address, messages: [], loadedPages: 0, totalItems: null };
+  }
+
+  /** Attempts the backup provider, Guerrilla Mail. Only ever called
+   *  after mail.gw itself has failed — see init(). */
+  async function attemptGuerrilla() {
+    const { sidToken, address, createdAt } = await GuerrillaMail.createAddress();
+    return { provider: 'guerrilla', sidToken, address, createdAt, messages: [], loadedPages: 0, totalItems: null };
+  }
+
+  function setProviderNote(active) {
+    if (!els.providerNote) return;
+    els.providerNote.hidden = !active;
   }
 
   async function init() {
     stopPolling();
     showLoading();
+    let usedBackup = false;
     try {
-      const { account, address, password } = await MailTm.createAccountWithRetry(3);
-      const token = await MailTm.getToken(address, password);
-      session = { token, account, address, messages: [], loadedPages: 0, totalItems: null };
-      els.addressField.value = address;
-      els.copyBtnLabel.textContent = 'Copy';
-      els.inboxStatus.textContent = 'Waiting for incoming mail…';
-      els.messageList.innerHTML = '';
-      els.unreadBadge.hidden = true;
-      els.loadMoreBtn.hidden = true;
-      showTicket();
-      startPolling({ immediate: true });
-      startCountdown(account);
-    } catch (err) {
-      session = null;
-      stopCountdown();
-      showError(friendlyError(err));
+      session = await attemptMailGw();
+    } catch (primaryErr) {
+      try {
+        session = await attemptGuerrilla();
+        usedBackup = true;
+      } catch (backupErr) {
+        session = null;
+        stopCountdown();
+        showError(friendlyError(primaryErr));
+        return;
+      }
+    }
+    els.addressField.value = session.address;
+    els.copyBtnLabel.textContent = 'Copy';
+    els.inboxStatus.textContent = 'Waiting for incoming mail…';
+    els.messageList.innerHTML = '';
+    els.unreadBadge.hidden = true;
+    els.loadMoreBtn.hidden = true;
+    setProviderNote(usedBackup);
+    showTicket();
+    startPolling({ immediate: true });
+    startCountdown();
+    if (usedBackup) {
+      showToast('mail.gw is unavailable — switched to a backup mail service', 'mail');
     }
   }
 
-  /** Ticks the retention indicator off mail.gw's own createdAt/
-   *  retentionAt fields on the account — a real value, not a
-   *  decorative countdown with nothing behind it. */
-  function startCountdown(account) {
+  /** Ticks the retention indicator. mail.gw reports real createdAt/
+   *  retentionAt timestamps on the account; Guerrilla Mail's API
+   *  doesn't return an expiry, so that branch uses its documented
+   *  fixed 1-hour retention instead (GuerrillaMail.RETENTION_MS) —
+   *  disclosed as such, not presented as a live value it isn't. */
+  function startCountdown() {
     stopCountdown();
-    const created = new Date(account.createdAt).getTime();
-    const expires = new Date(account.retentionAt).getTime();
+    let created, expires;
+    if (session.provider === 'mailgw') {
+      created = new Date(session.account.createdAt).getTime();
+      expires = new Date(session.account.retentionAt).getTime();
+    } else {
+      created = session.createdAt;
+      expires = created + GuerrillaMail.RETENTION_MS;
+    }
     if (!Number.isFinite(created) || !Number.isFinite(expires) || expires <= created) {
       els.expiryText.textContent = 'unknown';
       els.expiryBarFill.style.width = '100%';
@@ -214,7 +255,10 @@
     if (!session || pollInFlight) return;
     pollInFlight = true;
     try {
-      const { messages, totalItems } = await MailTm.listMessages(session.token, 1);
+      const { messages, totalItems } =
+        session.provider === 'mailgw'
+          ? await MailTm.listMessages(session.token, 1)
+          : await GuerrillaMail.listMessages(session.sidToken);
       session.totalItems = totalItems;
       if (session.loadedPages === 0) session.loadedPages = 1;
       const isFirstLoad = session.messages.length === 0;
@@ -250,7 +294,10 @@
   /** Fetches the next page (real mail.gw pagination, driven by the
    *  API's own hydra:totalItems) and appends it below what's shown. */
   async function loadMoreMessages() {
-    if (!session || loadMoreInFlight) return;
+    // Guerrilla Mail's check_email call always returns the full
+    // current list in one shot — there's no separate "next page" to
+    // fetch, so Load More only ever applies to mail.gw.
+    if (!session || loadMoreInFlight || session.provider !== 'mailgw') return;
     loadMoreInFlight = true;
     els.loadMoreBtn.classList.add('is-loading');
     try {
@@ -347,7 +394,10 @@
   async function openMessage(id) {
     if (!session) return;
     try {
-      const full = await MailTm.getMessage(session.token, id);
+      const full =
+        session.provider === 'mailgw'
+          ? await MailTm.getMessage(session.token, id)
+          : await GuerrillaMail.getMessage(session.sidToken, id);
       lastFocusedEl = document.activeElement;
 
       els.messageFrom.textContent = (full.from && (full.from.name ? `${full.from.name} <${full.from.address}>` : full.from.address)) || 'Unknown sender';
@@ -463,8 +513,14 @@
     session = null;
     if (old) {
       // Best-effort — burning the old mailbox isn't guaranteed,
-      // it's disposable regardless of whether this succeeds.
-      MailTm.deleteAccount(old.token, old.account.id);
+      // it's disposable regardless of whether this succeeds. Every
+      // "New address" click retries mail.gw first, per its priority —
+      // this only ever cleans up whichever provider issued `old`.
+      if (old.provider === 'mailgw') {
+        MailTm.deleteAccount(old.token, old.account.id);
+      } else {
+        GuerrillaMail.forgetMe(old.sidToken, old.address);
+      }
     }
     await init();
     if (session) showToast('New address issued', 'refresh');

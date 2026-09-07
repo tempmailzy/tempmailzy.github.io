@@ -63,7 +63,7 @@
           "name": "Who actually runs the mailbox?",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "mail.gw, a free third-party email API. Mailzy is a client-side interface to it — we don't operate any mail infrastructure ourselves, and mail.gw's own reliability and policies apply directly to your mailbox."
+            "text": "mail.gw, a free third-party email API, is the priority provider. If it's unreachable, Mailzy automatically and visibly switches to a backup provider, Guerrilla Mail, so the tool keeps working during an outage — disclosed on screen every time, never silent."
           }
         },
         {
@@ -183,10 +183,13 @@
             <dt>Who actually runs the mailbox?</dt>
             <dd>
               <a href="https://mail.gw" rel="noopener noreferrer" target="_blank">mail.gw</a>, a free
-              third-party email API. Mailzy is a client-side interface to it &mdash; we don't operate any
-              mail infrastructure ourselves, which also means mail.gw's own uptime and policies apply
-              directly to your mailbox. When mail.gw is down, Mailzy shows an honest error rather than
-              pretending otherwise.
+              third-party email API, and it's the priority provider &mdash; every address starts there.
+              Mailzy is a client-side interface to it, so mail.gw's own uptime and policies apply directly
+              to your mailbox. If mail.gw is unreachable, Mailzy automatically switches to a backup
+              provider, Guerrilla Mail, instead of going dark &mdash; this is always disclosed on screen
+              (a banner above your address, plus a toast) the moment it happens, never silent. The backup
+              has its own fixed 1-hour retention, shown honestly rather than borrowed from mail.gw's. If
+              both are down at once, Mailzy shows an honest error rather than pretending otherwise.
             </dd>
           </div>
 
@@ -234,6 +237,9 @@
         <a href="index.html">Inbox</a>
         <a href="about.html">About</a>
         <a href="how-it-works.html">How It Works</a>
+        <a href="disposable-email-guide.html">Disposable Email Guide</a>
+        <a href="temp-email-uses.html">Common Uses</a>
+        <a href="online-privacy-guide.html">Privacy Guide</a>
         <a href="privacy.html">Privacy Policy</a>
         <a href="contact.html">Contact Us</a>
       </p>
@@ -263,5 +269,6 @@
     });
     applyTheme(document.documentElement.dataset.theme === 'light' ? 'light' : 'dark');
   </script>
+  <script src="js/reveal.js"></script>
 </body>
 </html>

@@ -66,16 +66,21 @@
       </section>
 
       <section>
-        <h2>The temporary mailbox (mail.gw)</h2>
+        <h2>The temporary mailbox (mail.gw, with a disclosed backup)</h2>
         <p>
           When you load Mailzy, your browser creates a temporary mailbox directly with
           <a href="https://mail.gw" rel="noopener noreferrer" target="_blank">mail.gw</a>, an independent
-          third-party email service. Mailzy itself never sees, stores, or has access to the address,
-          password, or any message content &mdash; that data lives with mail.gw and travels directly
-          between your browser and their servers. Review
+          third-party email service and Mailzy's priority provider. Mailzy itself never sees, stores, or
+          has access to the address, password, or any message content &mdash; that data lives with
+          mail.gw and travels directly between your browser and their servers. Review
           <a href="https://mail.gw" rel="noopener noreferrer" target="_blank">mail.gw's own terms</a>
-          for how they handle it on their end. Messages sent to a Mailzy address are not private:
-          anyone who has or guesses the address can read what's delivered to it.
+          for how they handle it on their end. If mail.gw is temporarily unreachable, your browser
+          automatically requests a mailbox from a backup provider,
+          <a href="https://www.guerrillamail.com" rel="noopener noreferrer" target="_blank">Guerrilla Mail</a>,
+          instead &mdash; this switch is always shown on screen when it happens, never silent, and the
+          same "your browser talks directly to the provider" rule applies to it too. Messages sent to a
+          Mailzy address, from either provider, are not private: anyone who has or guesses the address
+          can read what's delivered to it.
         </p>
       </section>
 
@@ -143,6 +148,9 @@
         <a href="about.html">About</a>
         <a href="how-it-works.html">How It Works</a>
         <a href="faq.html">FAQ</a>
+        <a href="disposable-email-guide.html">Disposable Email Guide</a>
+        <a href="temp-email-uses.html">Common Uses</a>
+        <a href="online-privacy-guide.html">Privacy Guide</a>
         <a href="contact.html">Contact Us</a>
       </p>
       <p>&copy; <span id="footerYear"></span> Mailzy.</p>
@@ -171,5 +179,6 @@
     });
     applyTheme(document.documentElement.dataset.theme === 'light' ? 'light' : 'dark');
   </script>
+  <script src="js/reveal.js"></script>
 </body>
 </html>

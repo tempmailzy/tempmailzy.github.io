@@ -110,13 +110,26 @@
       </section>
 
       <section>
+        <h2>What happens when mail.gw is down</h2>
+        <p>
+          mail.gw is the priority provider &mdash; every address starts there. If it's unreachable after
+          its own retries, Mailzy automatically issues your address from a backup provider (Guerrilla
+          Mail) instead, so the tool keeps working during an outage rather than going dark. This is never
+          silent: a banner appears above your address explaining the switch, and a toast confirms it the
+          moment it happens. The backup provider has its own fixed 1-hour retention window, shown
+          honestly rather than borrowed from mail.gw's typically longer one. If both providers are down at
+          once, you'll see an honest error message and a manual retry button &mdash; Mailzy never pretends
+          an address works when it doesn't.
+        </p>
+      </section>
+
+      <section>
         <h2>What Mailzy deliberately doesn't do</h2>
         <p>
-          It doesn't retry silently against a different provider if mail.gw is unreachable &mdash; if the
-          service is down, you'll see an honest error message and a manual retry button, not a
-          quietly-swapped-in replacement. It doesn't send email, only receive it. And it doesn't keep any
-          record of an address after you leave it behind; there's no history, no "recent addresses" list,
-          nothing to look back on later.
+          Beyond the disclosed mail.gw &rarr; backup switch above, Mailzy doesn't quietly change providers
+          for any other reason, doesn't send email (only receive it), and doesn't keep any record of an
+          address after you leave it behind; there's no history, no "recent addresses" list, nothing to
+          look back on later.
         </p>
       </section>
 
@@ -135,6 +148,9 @@
         <a href="index.html">Inbox</a>
         <a href="about.html">About</a>
         <a href="faq.html">FAQ</a>
+        <a href="disposable-email-guide.html">Disposable Email Guide</a>
+        <a href="temp-email-uses.html">Common Uses</a>
+        <a href="online-privacy-guide.html">Privacy Guide</a>
         <a href="privacy.html">Privacy Policy</a>
         <a href="contact.html">Contact Us</a>
       </p>
@@ -164,5 +180,6 @@
     });
     applyTheme(document.documentElement.dataset.theme === 'light' ? 'light' : 'dark');
   </script>
+  <script src="js/reveal.js"></script>
 </body>
 </html>
