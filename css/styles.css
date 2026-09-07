@@ -462,6 +462,26 @@ a {
   color: var(--text);
 }
 
+/* Backup-provider disclosure — only ever visible when mail.gw has
+   actually failed over to Guerrilla Mail. Amber, not red/error-toned:
+   this is a working fallback, not a broken state. */
+.provider-badge {
+  display: inline-block;
+  margin-left: var(--space-2);
+  padding: 1px 7px;
+  font-size: 0.68rem;
+  font-weight: 700;
+  color: var(--warning);
+  background: rgba(251, 191, 36, 0.12);
+  border: 1px solid rgba(251, 191, 36, 0.3);
+  border-radius: var(--radius-pill);
+  vertical-align: middle;
+}
+
+.provider-badge[hidden] {
+  display: none;
+}
+
 .expiry-bar {
   height: 5px;
   border-radius: var(--radius-pill);
