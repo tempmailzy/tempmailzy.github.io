@@ -27,16 +27,15 @@
     messageBody: document.getElementById('messageBody'),
     closeMessageBtn: document.getElementById('closeMessageBtn'),
     copyBtnLabel: document.getElementById('copyBtnLabel'),
-    unreadBadge: document.getElementById('unreadBadge'),
     expiryText: document.getElementById('expiryText'),
     expiryBarFill: document.getElementById('expiryBarFill'),
-    themeToggleBtn: document.getElementById('themeToggleBtn'),
-    themeToggleIcon: document.getElementById('themeToggleIcon'),
-    themeToggleLabel: document.getElementById('themeToggleLabel'),
     loadMoreBtn: document.getElementById('loadMoreBtn'),
     securityBadge: document.getElementById('securityBadge'),
     toastRegion: document.getElementById('toastRegion'),
     providerNote: document.getElementById('providerNote'),
+    sidebarUnreadCount: document.getElementById('sidebarUnreadCount'),
+    sidebarGenerateBtn: document.getElementById('sidebarGenerateBtn'),
+    messageSearchInput: document.getElementById('messageSearchInput'),
   };
 
   /** @type {{provider:'mailgw'|'guerrilla', token?:string, account?:object, sidToken?:string, createdAt?:number, address:string, messages:object[], loadedPages:number, totalItems:number|null}|null}
@@ -119,7 +118,8 @@
     els.copyBtnLabel.textContent = 'Copy';
     els.inboxStatus.textContent = 'Waiting for incoming mail…';
     els.messageList.innerHTML = '';
-    els.unreadBadge.hidden = true;
+    if (els.sidebarUnreadCount) els.sidebarUnreadCount.textContent = '0';
+    if (els.messageSearchInput) els.messageSearchInput.value = '';
     els.loadMoreBtn.hidden = true;
     setProviderNote(usedBackup);
     showTicket();
@@ -315,23 +315,80 @@
     }
   }
 
+  /** Empty-inbox icon, matching the reference design's envelope
+   *  glyph — built as a real SVG element, not innerHTML. */
+  function createEnvelopeIcon() {
+    const svg = document.createElementNS(SVG_NS, 'svg');
+    svg.setAttribute('viewBox', '0 0 24 24');
+    svg.setAttribute('width', '26');
+    svg.setAttribute('height', '26');
+    svg.setAttribute('fill', 'none');
+    svg.setAttribute('stroke', 'currentColor');
+    svg.setAttribute('stroke-width', '2.2');
+    svg.setAttribute('stroke-linecap', 'round');
+    svg.setAttribute('stroke-linejoin', 'round');
+    const rect = document.createElementNS(SVG_NS, 'rect');
+    rect.setAttribute('x', '3');
+    rect.setAttribute('y', '5');
+    rect.setAttribute('width', '18');
+    rect.setAttribute('height', '14');
+    rect.setAttribute('rx', '3');
+    const path = document.createElementNS(SVG_NS, 'path');
+    path.setAttribute('d', 'm3 7 9 6 9-6');
+    svg.appendChild(rect);
+    svg.appendChild(path);
+    return svg;
+  }
+
+  function currentSearchTerm() {
+    return els.messageSearchInput ? els.messageSearchInput.value.trim().toLowerCase() : '';
+  }
+
+  function matchesSearch(m, term) {
+    if (!term) return true;
+    const senderLabel = (m.from && (m.from.name || m.from.address)) || '';
+    return (
+      senderLabel.toLowerCase().includes(term) ||
+      (m.subject || '').toLowerCase().includes(term) ||
+      (m.intro || '').toLowerCase().includes(term)
+    );
+  }
+
   function renderMessageList() {
     if (!session) return;
-    const messages = session.messages;
+    const allMessages = session.messages;
+    const term = currentSearchTerm();
+    const messages = allMessages.filter((m) => matchesSearch(m, term));
 
     els.messageList.innerHTML = '';
 
-    const unreadCount = messages.filter((m) => m.seen === false).length;
-    els.unreadBadge.hidden = unreadCount === 0;
-    els.unreadBadge.textContent = `${unreadCount} Unread`;
+    const unreadCount = allMessages.filter((m) => m.seen === false).length;
+    if (els.sidebarUnreadCount) els.sidebarUnreadCount.textContent = String(unreadCount);
 
-    const hasMore = typeof session.totalItems === 'number' && messages.length < session.totalItems;
-    els.loadMoreBtn.hidden = !hasMore;
+    const hasMore = typeof session.totalItems === 'number' && allMessages.length < session.totalItems;
+    els.loadMoreBtn.hidden = !hasMore || Boolean(term);
 
     if (messages.length === 0) {
       const empty = document.createElement('li');
       empty.className = 'message-empty';
-      empty.textContent = 'Nothing yet.';
+      const icon = document.createElement('span');
+      icon.className = 'message-empty__icon';
+      icon.setAttribute('aria-hidden', 'true');
+      icon.appendChild(createEnvelopeIcon());
+      const title = document.createElement('p');
+      title.className = 'message-empty__title';
+      const sub = document.createElement('p');
+      sub.className = 'message-empty__sub';
+      if (term) {
+        title.textContent = 'No matching emails';
+        sub.textContent = `Nothing in this inbox matches "${term}".`;
+      } else {
+        title.textContent = 'No emails yet';
+        sub.textContent = 'Your inbox is empty. Emails will appear here once received.';
+      }
+      empty.appendChild(icon);
+      empty.appendChild(title);
+      empty.appendChild(sub);
       els.messageList.appendChild(empty);
     } else {
       messages.forEach((m) => {
@@ -569,31 +626,6 @@
     target.appendChild(ripple);
   }
 
-  /** Theme is UI-only state, unrelated to the mailbox-session rule
-   *  above — persisting it in localStorage is fine. The inline
-   *  script in index.html already set the initial data-theme
-   *  attribute before first paint; this just keeps the toggle in
-   *  sync with it and handles clicks. */
-  function applyTheme(theme) {
-    document.documentElement.dataset.theme = theme;
-    try {
-      localStorage.setItem('theme', theme);
-    } catch {
-      // Private browsing / storage disabled — theme just won't persist.
-    }
-    els.themeToggleIcon.textContent = theme === 'light' ? '☀️' : '🌙';
-    els.themeToggleLabel.textContent = theme === 'light' ? 'Light Mode' : 'Dark Mode';
-    els.themeToggleBtn.setAttribute('aria-pressed', theme === 'light' ? 'true' : 'false');
-  }
-
-  function toggleTheme() {
-    const current = document.documentElement.dataset.theme === 'light' ? 'light' : 'dark';
-    applyTheme(current === 'light' ? 'dark' : 'light');
-  }
-
-  els.themeToggleBtn.addEventListener('click', toggleTheme);
-  applyTheme(document.documentElement.dataset.theme === 'light' ? 'light' : 'dark');
-
   /** Spins the refresh icon while a manual refresh is in flight — a
    *  small confirmation that the click did something, skipped under
    *  reduced motion. */
@@ -617,6 +649,22 @@
   }
 
   initSecurityBadge();
+
+  // "Generate New" in the sidebar does exactly what the hero card's
+  // "New Address" button does — both just trigger newAddress(). Also
+  // closes the off-canvas sidebar on mobile (owned by js/shell.js,
+  // which runs on every page), since this is an in-page action
+  // rather than a navigation that would close it anyway.
+  if (els.sidebarGenerateBtn) {
+    els.sidebarGenerateBtn.addEventListener('click', () => {
+      if (window.MailzyShell) window.MailzyShell.closeSidebar();
+      newAddress();
+    });
+  }
+
+  // Client-side only — re-filters the already-fetched message list,
+  // no extra network request.
+  if (els.messageSearchInput) els.messageSearchInput.addEventListener('input', renderMessageList);
 
   els.retryBtn.addEventListener('click', init);
   els.refreshBtn.addEventListener('click', () => {

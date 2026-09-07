@@ -9,7 +9,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="description" content="Mailzy is a free temporary email generator — get a disposable inbox instantly, no signup required. Avoid spam and keep your real address private." />
   <meta name="robots" content="index, follow" />
-  <meta name="theme-color" content="#0b0c14" />
+  <meta name="theme-color" content="#000000" />
   <link rel="canonical" href="https://tempmailzy.github.io/" />
 
   <!-- Open Graph / link previews -->
@@ -71,180 +71,291 @@
   </script>
 </head>
 <body>
-  <nav class="topnav">
-    <div class="topnav__inner">
-      <div class="brand">
-        <span class="brand-mark" aria-hidden="true">
-          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M6 17V7l6 7 6-7v10" />
-          </svg>
-        </span>
-        <span class="brand-name">Mail<span class="brand-accent">zy</span></span>
-      </div>
+  <header class="app-header">
+    <button type="button" class="sidebar-toggle" id="sidebarToggleBtn" aria-label="Toggle menu" aria-expanded="false" aria-controls="sidebar">
+      <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h18M3 12h18M3 18h18" /></svg>
+    </button>
+    <a class="app-header__brand" href="index.html">
+      <span class="app-header__logo" aria-hidden="true">
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M6 17V7l6 7 6-7v10" />
+        </svg>
+      </span>
+      <span class="app-header__brandtext">
+        <span class="app-header__name">Mail<span class="accent">Zy</span></span>
+        <span class="app-header__tagline">Temporary Email, Real Freedom</span>
+      </span>
+    </a>
 
-      <div class="nav-actions">
-        <button type="button" class="theme-toggle" id="themeToggleBtn" aria-pressed="false">
-          <span class="theme-toggle__icon" id="themeToggleIcon" aria-hidden="true">🌙</span>
-          <span id="themeToggleLabel">Dark Mode</span>
-        </button>
-        <!-- Reflects the page's ACTUAL protocol (see js/app.js) — this
-             claims transport security only, never mail privacy. The
-             address-hint text below is explicit that mail itself
-             isn't private; this badge must not contradict that. -->
-        <span class="security-badge" id="securityBadge" hidden>
-          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" /><path d="m9 12 2 2 4-4" /></svg>
-          <span>HTTPS Encrypted</span>
-        </span>
-      </div>
+    <div class="app-header__actions">
+      <button type="button" class="theme-toggle" id="themeToggleBtn" aria-pressed="false">
+        <span class="theme-toggle__icon" id="themeToggleIcon" aria-hidden="true">🌙</span>
+        <span id="themeToggleLabel">Dark Mode</span>
+      </button>
+      <!-- Reflects the page's ACTUAL protocol (see js/app.js) — this
+           claims transport security only, never mail privacy. The
+           address-hint text below is explicit that mail itself
+           isn't private; this badge must not contradict that. -->
+      <span class="security-badge" id="securityBadge" hidden>
+        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" /><path d="m9 12 2 2 4-4" /></svg>
+        <span>HTTPS Encrypted</span>
+      </span>
     </div>
-  </nav>
+  </header>
 
-  <div class="page" id="top">
-    <section class="hero">
-      <h1>A Disposable Inbox, Ready <span class="hero-accent">Instantly</span></h1>
-      <p>No registration or password required &mdash; your address is active immediately.</p>
-    </section>
+  <div class="shell">
+    <div class="sidebar-scrim" id="sidebarScrim" hidden></div>
 
-    <main class="app-card" id="app">
-      <!-- Loading state -->
-      <section class="panel-loading" id="loadingState" aria-live="polite">
-        <span class="spinner" aria-hidden="true"></span>
-        <p>
-          Provisioning your inbox<span class="dots" aria-hidden="true"><span>.</span><span>.</span><span>.</span></span>
-        </p>
-      </section>
+    <aside class="sidebar" id="sidebar">
+      <nav class="sidebar__nav" aria-label="App">
+        <a class="sidebar__item is-active" href="index.html">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="3" /><path d="m3 7 9 6 9-6" /></svg>
+          <span>Inbox</span>
+          <span class="sidebar__count" id="sidebarUnreadCount">0</span>
+        </a>
+        <button type="button" class="sidebar__item" id="sidebarGenerateBtn">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v14M5 12h14" /></svg>
+          <span>Generate New</span>
+        </button>
+        <a class="sidebar__item" href="settings.html">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3" /><path d="M12 1v4M12 19v4M4.2 4.2l2.9 2.9M16.9 16.9l2.9 2.9M1 12h4M19 12h4M4.2 19.8l2.9-2.9M16.9 7.1l2.9-2.9" /></svg>
+          <span>Settings</span>
+        </a>
+      </nav>
 
-      <!-- Error state (temp-mail API unreachable / exhausted retries) -->
-      <section class="panel-error" id="errorState" hidden role="alert">
-        <p class="panel-error__title">Connection Failed</p>
-        <p class="panel-error__message" id="errorMessage">
-          The mail service is temporarily unavailable.
-        </p>
-        <button type="button" class="btn btn--primary" id="retryBtn">
-          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a9 9 0 1 1-2.64-6.36" /><path d="M21 3v6h-6" /></svg>
-          Try again
+      <div class="sidebar__divider" role="separator"></div>
+
+      <nav class="sidebar__nav sidebar__nav--secondary" aria-label="Resources">
+        <a class="sidebar__item" href="how-it-works.html">
+          <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z" /></svg>
+          <span>How It Works</span>
+        </a>
+        <a class="sidebar__item" href="faq.html">
+          <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10" /><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 2-3 4" /><path d="M12 17h.01" /></svg>
+          <span>FAQ</span>
+        </a>
+        <a class="sidebar__item" href="disposable-email-guide.html">
+          <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" /><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" /></svg>
+          <span>Disposable Email Guide</span>
+        </a>
+        <a class="sidebar__item" href="temp-email-uses.html">
+          <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1" /><rect x="14" y="3" width="7" height="7" rx="1" /><rect x="3" y="14" width="7" height="7" rx="1" /><rect x="14" y="14" width="7" height="7" rx="1" /></svg>
+          <span>Common Uses</span>
+        </a>
+        <a class="sidebar__item" href="online-privacy-guide.html">
+          <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" /></svg>
+          <span>Privacy Guide</span>
+        </a>
+        <a class="sidebar__item" href="privacy.html">
+          <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" /></svg>
+          <span>Privacy Policy</span>
+        </a>
+        <a class="sidebar__item" href="terms.html">
+          <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" /><path d="M14 2v6h6" /><path d="M9 13h6M9 17h6" /></svg>
+          <span>Terms</span>
+        </a>
+        <a class="sidebar__item" href="contact.html">
+          <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="3" /><path d="m3 7 9 6 9-6" /></svg>
+          <span>Contact Us</span>
+        </a>
+      </nav>
+
+      <div class="sidebar__watermark" aria-hidden="true">M</div>
+    </aside>
+
+    <main class="shell__main">
+      <section class="hero-cta">
+        <span class="hero-cta__icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="3" /><path d="m3 7 9 6 9-6" /></svg>
+        </span>
+        <div class="hero-cta__body">
+          <span class="hero-cta__eyebrow">Temporary Email</span>
+          <h1 class="hero-cta__title">Get a <span class="accent">disposable email address</span></h1>
+          <p class="hero-cta__sub">No registration or password required &mdash; your address is active immediately.</p>
+        </div>
+        <button type="button" class="btn btn--primary btn--pill hero-cta__action" id="newAddressBtn">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v14M5 12h14" /></svg>
+          New Address
         </button>
       </section>
 
-      <!-- Main panel -->
-      <div class="panel-body" id="ticketBody" hidden>
-        <!-- Shown only when mail.gw (priority) was unreachable and
-             Mailzy automatically switched to the backup provider —
-             disclosed here and via a toast, never silently. -->
-        <p class="provider-note" id="providerNote" hidden>
-          <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 9v4M12 17h.01" /><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0Z" /></svg>
-          <span>mail.gw is currently unavailable &mdash; this address was issued by our backup provider instead.</span>
-        </p>
-        <div class="address-card">
-          <span class="address-card__icon" aria-hidden="true">
-            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M6 17V7l6 7 6-7v10" />
-            </svg>
-          </span>
-          <div class="address-card__main">
-            <label class="address-card__label" for="addressField">Temporary Email Address</label>
-            <input type="text" id="addressField" class="address-field" readonly spellcheck="false" />
+      <section class="app-card" id="app">
+        <!-- Loading state -->
+        <section class="panel-loading" id="loadingState" aria-live="polite">
+          <span class="spinner" aria-hidden="true"></span>
+          <p>
+            Provisioning your inbox<span class="dots" aria-hidden="true"><span>.</span><span>.</span><span>.</span></span>
+          </p>
+        </section>
+
+        <!-- Error state (temp-mail API unreachable / exhausted retries) -->
+        <section class="panel-error" id="errorState" hidden role="alert">
+          <p class="panel-error__title">Connection Failed</p>
+          <p class="panel-error__message" id="errorMessage">
+            The mail service is temporarily unavailable.
+          </p>
+          <button type="button" class="btn btn--primary" id="retryBtn">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a9 9 0 1 1-2.64-6.36" /><path d="M21 3v6h-6" /></svg>
+            Try again
+          </button>
+        </section>
+
+        <!-- Main panel -->
+        <div class="panel-body" id="ticketBody" hidden>
+          <!-- Shown only when mail.gw (priority) was unreachable and
+               Mailzy automatically switched to the backup provider —
+               disclosed here and via a toast, never silently. -->
+          <p class="provider-note" id="providerNote" hidden>
+            <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 9v4M12 17h.01" /><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0Z" /></svg>
+            <span>mail.gw is currently unavailable &mdash; this address was issued by our backup provider instead.</span>
+          </p>
+          <div class="address-card">
+            <span class="address-card__icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M6 17V7l6 7 6-7v10" />
+              </svg>
+            </span>
+            <div class="address-card__main">
+              <label class="address-card__label" for="addressField">Temporary Email Address</label>
+              <input type="text" id="addressField" class="address-field" readonly spellcheck="false" />
+            </div>
+            <button type="button" class="btn btn--primary btn--pill" id="copyBtn">
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="9" width="13" height="13" rx="2" /><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" /></svg>
+              <span id="copyBtnLabel">Copy</span>
+            </button>
           </div>
-          <button type="button" class="btn btn--primary btn--pill" id="copyBtn">
-            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="9" width="13" height="13" rx="2" /><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" /></svg>
-            <span id="copyBtnLabel">Copy</span>
+
+          <div class="expiry-row">
+            <span>Retention Period</span>
+            <span id="expiryText">&mdash;</span>
+          </div>
+          <div class="expiry-bar" role="presentation">
+            <div class="expiry-bar__fill" id="expiryBarFill"></div>
+          </div>
+
+          <p class="address-hint">
+            Mail sent to this address is delivered below. Treat it as a shared inbox, not a private one &mdash;
+            avoid using it for anything sensitive.
+          </p>
+
+          <div class="inbox-header">
+            <div class="inbox-header__title">
+              <span class="inbox-header__icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="3" /><path d="m3 7 9 6 9-6" /></svg>
+              </span>
+              <div>
+                <h2>Inbox</h2>
+                <p>Emails will be automatically deleted after the expiration time.</p>
+              </div>
+            </div>
+            <div class="inbox-header__actions">
+              <label class="inbox-search">
+                <span class="sr-only">Search messages</span>
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7" /><path d="m21 21-4.3-4.3" /></svg>
+                <input type="search" id="messageSearchInput" placeholder="Search emails…" autocomplete="off" />
+              </label>
+              <button type="button" class="btn btn--outline btn--round" id="refreshBtn" aria-label="Refresh inbox">
+                <svg class="icon-refresh" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a9 9 0 1 1-2.64-6.36" /><path d="M21 3v6h-6" /></svg>
+              </button>
+            </div>
+          </div>
+
+          <!-- Screen-reader-only status announcer — the visible badge +
+               list below carry the same information visually. -->
+          <p class="sr-only" id="inboxStatus" aria-live="polite">Waiting for mail&hellip;</p>
+
+          <div class="message-list-wrap">
+            <ul class="message-list" id="messageList"></ul>
+          </div>
+
+          <button type="button" class="load-more" id="loadMoreBtn" hidden>
+            Load more messages
+            <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6" /></svg>
           </button>
         </div>
+      </section>
 
-        <div class="expiry-row">
-          <span>Retention Period</span>
-          <span id="expiryText">&mdash;</span>
+      <nav class="quick-links" aria-label="Guides">
+        <a class="quick-links__item" href="how-it-works.html">
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z" /></svg>
+          <span>How It Works</span>
+        </a>
+        <a class="quick-links__item" href="faq.html">
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10" /><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 2-3 4" /><path d="M12 17h.01" /></svg>
+          <span>FAQ</span>
+        </a>
+        <a class="quick-links__item" href="disposable-email-guide.html">
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" /><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" /></svg>
+          <span>Disposable Email Guide</span>
+        </a>
+        <a class="quick-links__item" href="temp-email-uses.html">
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1" /><rect x="14" y="3" width="7" height="7" rx="1" /><rect x="3" y="14" width="7" height="7" rx="1" /><rect x="14" y="14" width="7" height="7" rx="1" /></svg>
+          <span>Common Uses</span>
+        </a>
+        <a class="quick-links__item" href="privacy.html">
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" /></svg>
+          <span>Privacy Policy</span>
+        </a>
+      </nav>
+
+      <section class="features">
+        <div class="feature-card reveal-target">
+          <span class="feature-card__number">01</span>
+          <span class="feature-card__icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9.88 9.88a3 3 0 1 0 4.24 4.24" /><path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68" /><path d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61" /><path d="m2 2 20 20" /></svg>
+          </span>
+          <h3>Anonymous</h3>
+          <p>No account or personal details required.</p>
         </div>
-        <div class="expiry-bar" role="presentation">
-          <div class="expiry-bar__fill" id="expiryBarFill"></div>
+        <div class="feature-card reveal-target">
+          <span class="feature-card__number">02</span>
+          <span class="feature-card__icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z" /></svg>
+          </span>
+          <h3>Instant</h3>
+          <p>Your address is active the moment this page loads.</p>
         </div>
-
-        <p class="address-hint">
-          Mail sent to this address is delivered below. Treat it as a shared inbox, not a private one &mdash;
-          avoid using it for anything sensitive.
-        </p>
-
-        <div class="inbox-header">
-          <div class="inbox-header__title">
-            <h2>Inbox</h2>
-            <span class="badge" id="unreadBadge" hidden></span>
-          </div>
-          <div class="inbox-header__actions">
-            <button type="button" class="btn btn--outline" id="refreshBtn">
-              <svg class="icon-refresh" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a9 9 0 1 1-2.64-6.36" /><path d="M21 3v6h-6" /></svg>
-              Refresh
-            </button>
-            <button type="button" class="btn btn--primary" id="newAddressBtn">
-              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v14M5 12h14" /></svg>
-              New address
-            </button>
-          </div>
+        <div class="feature-card reveal-target">
+          <span class="feature-card__number">03</span>
+          <span class="feature-card__icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" /></svg>
+          </span>
+          <h3>Disposable</h3>
+          <p>Discard it at any time without affecting your primary inbox.</p>
         </div>
-
-        <!-- Screen-reader-only status announcer — the visible badge +
-             list below carry the same information visually. -->
-        <p class="sr-only" id="inboxStatus" aria-live="polite">Waiting for mail&hellip;</p>
-
-        <div class="message-list-wrap">
-          <ul class="message-list" id="messageList"></ul>
-        </div>
-
-        <button type="button" class="load-more" id="loadMoreBtn" hidden>
-          Load more messages
-          <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6" /></svg>
-        </button>
-      </div>
+      </section>
     </main>
 
-    <section class="features">
-      <div class="feature-card">
-        <span class="feature-card__number">01</span>
-        <span class="feature-card__icon" aria-hidden="true">
-          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9.88 9.88a3 3 0 1 0 4.24 4.24" /><path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68" /><path d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61" /><path d="m2 2 20 20" /></svg>
-        </span>
-        <h3>Anonymous</h3>
-        <p>No account or personal details required.</p>
+    <aside class="shell__detail" id="detailPanel">
+      <div class="shell__detail-card">
+        <h2>Quick tips</h2>
+        <ul>
+          <li>
+            <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 9v4M12 17h.01" /><circle cx="12" cy="12" r="10" /></svg>
+            <span>Never use this address for password resets or account recovery &mdash; if it expires, you lose access permanently.</span>
+          </li>
+          <li>
+            <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" /></svg>
+            <span>Anyone with this address can read what's sent to it. Treat it as shared, not private.</span>
+          </li>
+          <li>
+            <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10" /><path d="M12 6v6l4 2" /></svg>
+            <span>The Retention Period bar above shows exactly when this mailbox actually expires.</span>
+          </li>
+        </ul>
       </div>
-      <div class="feature-card">
-        <span class="feature-card__number">02</span>
-        <span class="feature-card__icon" aria-hidden="true">
-          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z" /></svg>
-        </span>
-        <h3>Instant</h3>
-        <p>Your address is active the moment this page loads.</p>
-      </div>
-      <div class="feature-card">
-        <span class="feature-card__number">03</span>
-        <span class="feature-card__icon" aria-hidden="true">
-          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" /></svg>
-        </span>
-        <h3>Disposable</h3>
-        <p>Discard it at any time without affecting your primary inbox.</p>
-      </div>
-    </section>
-
-    <footer class="site-footer">
-      <p class="site-footer__links">
-        <a href="about.html">About</a>
-        <a href="how-it-works.html">How It Works</a>
-        <a href="faq.html">FAQ</a>
-        <a href="disposable-email-guide.html">Disposable Email Guide</a>
-        <a href="temp-email-uses.html">Common Uses</a>
-        <a href="online-privacy-guide.html">Privacy Guide</a>
-        <a href="privacy.html">Privacy Policy</a>
-        <a href="contact.html">Contact Us</a>
-      </p>
-      <p>
-        Mailboxes are provided by
-        <a href="https://mail.gw" rel="noopener noreferrer" target="_blank">mail.gw</a>, an independent
-        third-party service. If it's temporarily unreachable, Mailzy automatically switches to a backup
-        provider (Guerrilla Mail) and discloses it on screen &mdash; see the
-        <a href="faq.html">FAQ</a> for detail. Messages are not private or permanent &mdash; please avoid
-        using this address for sensitive communications.
-      </p>
-      <p>&copy; <span id="footerYear"></span> Mailzy.</p>
-    </footer>
+    </aside>
   </div>
+
+  <footer class="site-footer">
+    <p class="site-footer__links">
+      <a href="about.html">About</a>
+      <a href="privacy.html">Privacy</a>
+      <a href="terms.html">Terms</a>
+      <a href="contact.html">Contact Us</a>
+    </p>
+    <p>&copy; <span id="footerYear"></span> Mailzy. All rights reserved.</p>
+  </footer>
 
   <!-- Message detail overlay -->
   <div class="message-overlay" id="messageOverlay" hidden>
@@ -263,11 +374,7 @@
        them too, without stealing focus. -->
   <div class="toast-region" id="toastRegion" aria-live="polite" aria-atomic="false"></div>
 
-  <script>
-    var fy = document.getElementById('footerYear');
-    if (fy) fy.textContent = new Date().getFullYear();
-  </script>
-
+  <script src="js/shell.js"></script>
   <script src="js/mailtm.js"></script>
   <script src="js/guerrillamail.js"></script>
   <script src="js/reveal.js"></script>
