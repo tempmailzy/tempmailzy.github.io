@@ -65,33 +65,38 @@
 /* Light mode override — explicit attribute, not just a media query,
    since there's a manual toggle (see js/app.js applyTheme()). */
 :root[data-theme='light'] {
-  --bg: #fbfaf6;
+  /* Crisp white + neutral gray surfaces — the previous pass tinted
+     every surface (page bg, cards, search input) with the same
+     warm cream, which stacked into a muddy, uniformly "khaki" look
+     with no real separation between layers. Neutral grays here let
+     the accent color be the only thing carrying warmth. */
+  --bg: #ffffff;
   --bg-elevated: #ffffff;
-  --bg-elevated-2: #f6f2e6;
-  --border: rgba(120, 88, 4, 0.16);
-  --border-strong: rgba(120, 88, 4, 0.3);
+  --bg-elevated-2: #f4f3f2;
+  --border: rgba(28, 25, 20, 0.1);
+  --border-strong: rgba(28, 25, 20, 0.18);
 
-  --text: #17150f;
-  --text-soft: #5c584c;
-  --text-faint: #8a8676;
+  --text: #1c1a17;
+  --text-soft: #57534e;
+  --text-faint: #8a857c;
 
   /* The dark theme's --accent (#f4c430) is tuned to pop against
-     near-black — the same hex on a white/cream surface reads as
-     pale and low-contrast for text, icons, and links. Light mode
-     gets its own darker, legible gold instead of inheriting the
-     dark value; --accent-strong goes darker still for hover, since
-     "darken on hover" is the natural feedback direction on a light
-     surface (the dark theme brightens on hover instead). */
-  --accent: #92600a;
-  --accent-strong: #6e480a;
+     near-black — the same hex on a white surface reads as pale and
+     low-contrast for text, icons, and links. Light mode gets a
+     richer, more saturated amber instead of a muddy brown-gold, and
+     --accent-strong goes darker still for hover, since "darken on
+     hover" is the natural feedback direction on a light surface
+     (the dark theme brightens on hover instead). */
+  --accent: #b45309;
+  --accent-strong: #92400e;
   --accent-on: #ffffff;
-  --accent-soft: rgba(146, 96, 10, 0.12);
-  --focus: #6e480a;
+  --accent-soft: rgba(180, 83, 9, 0.1);
+  --focus: #92400e;
   --danger-bg: rgba(248, 113, 113, 0.08);
   --warn-bg: rgba(251, 191, 36, 0.12);
 
-  --shadow-card: 0 1px 2px rgba(30, 24, 5, 0.05), 0 20px 45px rgba(30, 24, 5, 0.08);
-  --shadow-card-lg: 0 2px 4px rgba(30, 24, 5, 0.07), 0 30px 70px rgba(30, 24, 5, 0.12);
+  --shadow-card: 0 1px 2px rgba(28, 25, 20, 0.04), 0 20px 45px rgba(28, 25, 20, 0.07);
+  --shadow-card-lg: 0 2px 4px rgba(28, 25, 20, 0.06), 0 30px 70px rgba(28, 25, 20, 0.1);
 }
 
 * {
