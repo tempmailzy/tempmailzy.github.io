@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <title>About — Mailzy</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <meta name="description" content="What Mailzy is, why it exists, and how it works under the hood — a small, open-source temporary email tool." />
+  <meta name="description" content="What Mailzy is, why it exists, how the client-side architecture works, and the deliberate trade-offs behind a temporary email tool with no backend." />
   <meta name="robots" content="index, follow" />
   <meta name="theme-color" content="#0b0c14" />
   <link rel="canonical" href="https://tempmailzy.github.io/about.html" />
@@ -59,38 +59,88 @@
       <section>
         <h2>What this is</h2>
         <p>
-          Mailzy gives you a real, working email address the instant you load the page &mdash; no signup,
-          no password. It's built for the moment you need an inbox to catch one email (a signup
-          confirmation, a one-time verification code) without handing over your real address.
+          Mailzy gives you a real, working email address the instant you load the page &mdash; no
+          signup, no password, no personal details. It exists for one specific, common situation: you
+          need to receive exactly one email &mdash; a signup confirmation, a one-time verification code,
+          a download link &mdash; from a service you don't fully trust yet, or simply don't want tied to
+          your real address forever. Instead of handing over an address you might regret sharing, you get
+          a disposable one, read whatever arrives, and let it expire on its own.
+        </p>
+        <p>
+          It's deliberately narrow in scope. Mailzy doesn't try to be a full email client, doesn't offer
+          folders or search or attachments handling, and doesn't pretend to replace your real inbox. It
+          does one thing &mdash; catch mail for a little while &mdash; and tries to do that one thing
+          well, honestly, and without collecting anything about you along the way.
         </p>
       </section>
 
       <section>
         <h2>How it actually works</h2>
         <p>
-          Mailzy is entirely client-side &mdash; there's no server or database behind it. When you load
-          the page, your browser talks directly to
+          Mailzy is entirely client-side &mdash; there is no server of ours, no database, and no backend
+          logic running anywhere. Every time you load the page, your own browser reaches out directly to
           <a href="https://mail.gw" rel="noopener noreferrer" target="_blank">mail.gw</a>, a free
-          third-party mail API, to create a mailbox and poll it for new messages. We don't see, store,
-          or have access to anything sent to your temporary address; it goes straight from mail.gw to
-          your browser.
+          third-party mail API, and asks it for a brand-new mailbox. From that point on, your browser
+          quietly polls mail.gw every few seconds asking "has anything arrived yet?" and renders whatever
+          comes back directly on the page in front of you.
+        </p>
+        <p>
+          That architecture has a real consequence worth spelling out: Mailzy never sees, stores, logs,
+          or has access to anything sent to your address. It can't, because there's nowhere for that data
+          to go through &mdash; it travels directly between mail.gw's servers and your browser, with
+          nothing of ours sitting in the middle. The full technical walkthrough, step by step, is on the
+          <a href="how-it-works.html">How It Works</a> page.
+        </p>
+      </section>
+
+      <section>
+        <h2>Why it's built this way</h2>
+        <p>
+          A lot of "free" temporary email tools quietly do one of two things: they log everything that
+          passes through them for later use, or they wrap a simple utility in intrusive ads and trackers.
+          Mailzy avoids the first possibility structurally, not just by policy &mdash; there is no backend
+          to log anything to, because there is no backend. What runs in your browser is the entire
+          application; every line of it is inspectable, because there's nothing hidden on a server
+          somewhere.
+        </p>
+        <p>
+          That choice comes with real trade-offs, and we'd rather be upfront about them than pretend they
+          don't exist. A backend-powered service could offer things Mailzy currently can't: a saved
+          address you can return to, a longer-lived inbox, multiple addresses at once. Mailzy doesn't do
+          any of that today, specifically because doing it properly would mean introducing an account
+          system and a server &mdash; the exact thing this project set out to avoid. If that ever changes,
+          it'll be a deliberate, disclosed addition, not something quietly bolted on.
         </p>
       </section>
 
       <section>
         <h2>Who's behind it</h2>
         <p>
-          Mailzy is an independent side project, built and maintained by a small team. Questions, bug
-          reports, or suggestions are always welcome &mdash; see <a href="contact.html">Contact Us</a>.
+          Mailzy is an independent side project, built and maintained by a small team &mdash; not a
+          venture-funded company, not an enterprise product. Questions, bug reports, or suggestions are
+          always welcome &mdash; see <a href="contact.html">Contact Us</a>.
         </p>
       </section>
 
       <section>
         <h2>What it isn't</h2>
         <p>
-          It isn't a private mailbox, and it isn't meant for anything long-term or sensitive. Anyone who
-          has (or guesses) your temporary address can read what's sent to it. See the
-          <a href="privacy.html">Privacy Policy</a> for the full detail on what is and isn't collected.
+          It isn't a private mailbox. Anyone who has, or correctly guesses, your temporary address can
+          read what's sent to it &mdash; that's fundamentally how the underlying public API works, and no
+          amount of clever UI changes that fact. See the <a href="privacy.html">Privacy Policy</a> for the
+          complete detail on what is and isn't collected.
+        </p>
+        <p>
+          It isn't permanent, either. Addresses and their contents disappear once mail.gw's own retention
+          window closes (shown live on the Inbox as "Retention Period"), or the moment you click "New
+          address" yourself.
+        </p>
+        <p>
+          And it isn't universally accepted. Plenty of services &mdash; banks, subscription platforms, AI
+          tools, anything that verifies identity &mdash; deliberately detect and reject known
+          disposable-email domains to prevent abuse. That's the target site's own policy decision, not a
+          Mailzy bug, and no temporary-email tool, free or paid, can reliably get around it. The
+          <a href="faq.html">FAQ</a> goes into exactly why that happens and what to do about it.
         </p>
       </section>
     </main>
@@ -98,6 +148,8 @@
     <footer class="site-footer">
       <p class="site-footer__links">
         <a href="index.html">Inbox</a>
+        <a href="how-it-works.html">How It Works</a>
+        <a href="faq.html">FAQ</a>
         <a href="privacy.html">Privacy Policy</a>
         <a href="contact.html">Contact Us</a>
       </p>
