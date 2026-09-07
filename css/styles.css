@@ -1119,7 +1119,11 @@ a {
   gap: var(--space-2);
 }
 
-.legal-page a {
+/* :not(.btn) — otherwise this beats .btn--primary's own color by
+   specificity (0,1,1 vs 0,1,0), making a button's text/icon render in
+   the same accent color as its own accent background: invisible. This
+   is exactly what broke the Contact page's email button. */
+.legal-page a:not(.btn) {
   color: var(--accent);
 }
 
