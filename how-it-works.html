@@ -180,10 +180,11 @@
         <p>
           mail.gw is the priority provider &mdash; every address starts there. If it's unreachable after
           its own retries, Mailzy automatically issues your address from a backup provider (Guerrilla
-          Mail) instead, so the tool keeps working during an outage rather than going dark. This is never
-          silent: a banner appears above your address explaining the switch, and a toast confirms it the
-          moment it happens. The backup provider has its own fixed 1-hour retention window, shown
-          honestly rather than borrowed from mail.gw's typically longer one. If both providers are down at
+          Mail) instead, so the tool keeps working during an outage rather than going dark. That switch
+          happens quietly in the background &mdash; there's no separate banner or notification calling it
+          out, since a working address either way is all that matters in the moment. The Retention Period
+          bar still reflects the real window for whichever provider issued the address (the backup's is a
+          shorter, fixed hour rather than mail.gw's typically longer one). If both providers are down at
           once, you'll see an honest error message and a manual retry button &mdash; Mailzy never pretends
           an address works when it doesn't.
         </p>
