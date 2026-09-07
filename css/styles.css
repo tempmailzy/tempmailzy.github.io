@@ -68,16 +68,25 @@
   --bg: #fbfaf6;
   --bg-elevated: #ffffff;
   --bg-elevated-2: #f6f2e6;
-  --border: rgba(150, 110, 5, 0.14);
-  --border-strong: rgba(150, 110, 5, 0.26);
+  --border: rgba(120, 88, 4, 0.16);
+  --border-strong: rgba(120, 88, 4, 0.3);
 
   --text: #17150f;
   --text-soft: #5c584c;
   --text-faint: #8a8676;
 
-  --accent-strong: #c98f00;
-  --accent-on: #14110a;
-  --accent-soft: rgba(180, 130, 10, 0.12);
+  /* The dark theme's --accent (#f4c430) is tuned to pop against
+     near-black — the same hex on a white/cream surface reads as
+     pale and low-contrast for text, icons, and links. Light mode
+     gets its own darker, legible gold instead of inheriting the
+     dark value; --accent-strong goes darker still for hover, since
+     "darken on hover" is the natural feedback direction on a light
+     surface (the dark theme brightens on hover instead). */
+  --accent: #92600a;
+  --accent-strong: #6e480a;
+  --accent-on: #ffffff;
+  --accent-soft: rgba(146, 96, 10, 0.12);
+  --focus: #6e480a;
   --danger-bg: rgba(248, 113, 113, 0.08);
   --warn-bg: rgba(251, 191, 36, 0.12);
 
