@@ -36,7 +36,6 @@
     loadMoreBtn: document.getElementById('loadMoreBtn'),
     securityBadge: document.getElementById('securityBadge'),
     toastRegion: document.getElementById('toastRegion'),
-    providerBadge: document.getElementById('providerBadge'),
   };
 
   /** @type {{provider:'mailgw'|'guerrillamail', token?:string, account?:object, sidToken?:string, address:string, createdAt:string|number, retentionAt:string|number, messages:object[], loadedPages:number, totalItems:number|null}|null} */
@@ -140,17 +139,13 @@
     }
   }
 
-  /** Shows "Backup: Guerrilla Mail" only when the fallback is actually
-   *  in use — hidden entirely while mail.gw (the default) is working,
-   *  so the disclosure never clutters the normal-path UI. */
+  /** Deliberately a no-op now: the owner asked not to disclose the
+   *  backup provider to site visitors. The call site in init() is kept
+   *  so re-enabling this later (or logging it somewhere internal) is a
+   *  one-function change, not a re-plumb. session.provider itself is
+   *  still tracked either way — only the on-page disclosure was removed. */
   function updateProviderBadge(provider) {
-    if (!els.providerBadge) return;
-    if (provider === 'guerrillamail') {
-      els.providerBadge.textContent = 'Backup: Guerrilla Mail';
-      els.providerBadge.hidden = false;
-    } else {
-      els.providerBadge.hidden = true;
-    }
+    void provider;
   }
 
   /** Dispatches to whichever provider actually created this session,
