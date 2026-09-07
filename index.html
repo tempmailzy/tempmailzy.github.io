@@ -101,7 +101,7 @@
 
   <div class="page" id="top">
     <section class="hero">
-      <h1>A Disposable Inbox, Ready Instantly</h1>
+      <h1>A Disposable Inbox, Ready <span class="hero-accent">Instantly</span></h1>
       <p>No registration or password required &mdash; your address is active immediately.</p>
     </section>
 
@@ -128,6 +128,13 @@
 
       <!-- Main panel -->
       <div class="panel-body" id="ticketBody" hidden>
+        <!-- Shown only when mail.gw (priority) was unreachable and
+             Mailzy automatically switched to the backup provider —
+             disclosed here and via a toast, never silently. -->
+        <p class="provider-note" id="providerNote" hidden>
+          <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 9v4M12 17h.01" /><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0Z" /></svg>
+          <span>mail.gw is currently unavailable &mdash; this address was issued by our backup provider instead.</span>
+        </p>
         <div class="address-card">
           <span class="address-card__icon" aria-hidden="true">
             <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round">
@@ -221,14 +228,19 @@
         <a href="about.html">About</a>
         <a href="how-it-works.html">How It Works</a>
         <a href="faq.html">FAQ</a>
+        <a href="disposable-email-guide.html">Disposable Email Guide</a>
+        <a href="temp-email-uses.html">Common Uses</a>
+        <a href="online-privacy-guide.html">Privacy Guide</a>
         <a href="privacy.html">Privacy Policy</a>
         <a href="contact.html">Contact Us</a>
       </p>
       <p>
         Mailboxes are provided by
         <a href="https://mail.gw" rel="noopener noreferrer" target="_blank">mail.gw</a>, an independent
-        third-party service. Messages are not private or permanent &mdash; please avoid using this address
-        for sensitive communications.
+        third-party service. If it's temporarily unreachable, Mailzy automatically switches to a backup
+        provider (Guerrilla Mail) and discloses it on screen &mdash; see the
+        <a href="faq.html">FAQ</a> for detail. Messages are not private or permanent &mdash; please avoid
+        using this address for sensitive communications.
       </p>
       <p>&copy; <span id="footerYear"></span> Mailzy.</p>
     </footer>
@@ -257,6 +269,8 @@
   </script>
 
   <script src="js/mailtm.js"></script>
+  <script src="js/guerrillamail.js"></script>
+  <script src="js/reveal.js"></script>
   <script src="js/app.js"></script>
 </body>
 </html>

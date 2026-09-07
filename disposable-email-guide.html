@@ -1,0 +1,219 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>What Is a Disposable Email Address? — Mailzy</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="description" content="A complete guide to disposable email addresses — how they work, why they exist, how they differ from aliases and permanent forwarding, and when to actually use one." />
+  <meta name="robots" content="index, follow" />
+  <meta name="theme-color" content="#0b0c14" />
+  <link rel="canonical" href="https://tempmailzy.github.io/disposable-email-guide.html" />
+  <meta name="google-adsense-account" content="ca-pub-9466250545587012" />
+
+  <link rel="icon" href="favicon.svg" type="image/svg+xml" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap"
+    rel="stylesheet"
+  />
+  <link rel="stylesheet" href="css/styles.css" />
+
+  <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "Article",
+      "headline": "What Is a Disposable Email Address? A Complete Guide",
+      "description": "How disposable email addresses work, why they exist, how they differ from aliases and forwarding, and when to actually use one.",
+      "url": "https://tempmailzy.github.io/disposable-email-guide.html",
+      "publisher": { "@type": "Organization", "name": "Mailzy" }
+    }
+  </script>
+
+  <script>
+    (function () {
+      try {
+        var stored = localStorage.getItem('theme');
+        document.documentElement.dataset.theme = stored === 'light' ? 'light' : 'dark';
+      } catch (e) {
+        document.documentElement.dataset.theme = 'dark';
+      }
+    })();
+  </script>
+</head>
+<body>
+  <nav class="topnav">
+    <div class="topnav__inner">
+      <a class="brand" href="index.html" style="text-decoration: none;">
+        <span class="brand-mark" aria-hidden="true">
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M6 17V7l6 7 6-7v10" />
+          </svg>
+        </span>
+        <span class="brand-name">Mail<span class="brand-accent">zy</span></span>
+      </a>
+
+      <div class="nav-actions">
+        <button type="button" class="theme-toggle" id="themeToggleBtn" aria-pressed="false">
+          <span class="theme-toggle__icon" id="themeToggleIcon" aria-hidden="true">🌙</span>
+          <span id="themeToggleLabel">Dark Mode</span>
+        </button>
+      </div>
+    </div>
+  </nav>
+
+  <div class="page">
+    <main class="legal-page">
+      <h1>What Is a Disposable Email Address? A Complete Guide</h1>
+      <p class="legal-updated">The mechanics, the trade-offs, and the honest limits — not a sales pitch.</p>
+
+      <section>
+        <h2>The short definition</h2>
+        <p>
+          A disposable email address is a real, functioning inbox that's created for temporary use and
+          meant to be thrown away. It can send and receive mail like any other address, but it isn't tied
+          to your identity, doesn't require a password you'll remember, and typically stops working after
+          a fixed window &mdash; anywhere from an hour to a few days, depending on the provider. The point
+          isn't secrecy or anonymity in some cloak-and-dagger sense; it's decoupling "I need to receive one
+          email" from "I need a permanent piece of my identity that follows me around the internet forever."
+        </p>
+      </section>
+
+      <section>
+        <h2>How it actually works, technically</h2>
+        <p>
+          Under the hood, a disposable address is provisioned against a mail domain the provider controls
+          &mdash; not yours, not a domain you'll ever touch again. A local part (the bit before the @) gets
+          generated, usually randomly, and a mailbox is opened for it on the provider's mail server. From
+          that point on it behaves like ordinary email: SMTP delivers messages to it, and the provider's
+          interface (a website, an API, sometimes both) lets you read what arrived. Mailzy, for instance,
+          talks directly to <a href="https://mail.gw" rel="noopener noreferrer" target="_blank">mail.gw</a>,
+          a third-party mail API, entirely from your browser &mdash; there's no account, no password to set,
+          and the address exists the instant the page loads. The full technical walkthrough is on the
+          <a href="how-it-works.html">How It Works</a> page if you want the specifics.
+        </p>
+        <p>
+          What happens when the window closes varies by provider. Some genuinely delete the mailbox and
+          everything in it. Others keep it around a bit longer internally but simply stop showing it to you.
+          Either way, the working assumption should always be the same: once it expires, whatever's in
+          there is gone, and there's no "recover my old temporary inbox" option, because that would defeat
+          the entire premise.
+        </p>
+      </section>
+
+      <section>
+        <h2>How it's different from an alias or forwarding address</h2>
+        <p>
+          It's easy to lump disposable email in with things like Gmail's "+tag" aliases, or dedicated
+          alias/forwarding services like Firefox Relay and SimpleLogin, but they solve different problems:
+        </p>
+        <ul>
+          <li>
+            <strong>A disposable address</strong> is short-lived by design and has no persistent connection
+            to your real inbox at all &mdash; nothing forwards to you, and it isn't meant to last.
+          </li>
+          <li>
+            <strong>An alias/forwarding address</strong> (SimpleLogin, Firefox Relay, or a "+tag" trick) is
+            meant to last indefinitely. Mail sent to it actually reaches your real inbox, just through an
+            intermediary you can shut off later. It's built for long-term account management, not
+            one-time verification.
+          </li>
+          <li>
+            <strong>A second "real" email account</strong> (a spare Gmail or Outlook address) sits in
+            between &mdash; permanent, but not linked to your primary identity unless you choose to link it.
+          </li>
+        </ul>
+        <p>
+          If you need to receive exactly one confirmation link and never think about that address again, a
+          disposable one is the right tool. If you want a service to be able to reach you long-term without
+          ever learning your real address, an alias service is the better fit &mdash; and it's worth
+          knowing the difference before picking either.
+        </p>
+      </section>
+
+      <section>
+        <h2>What it's genuinely good for</h2>
+        <p>
+          Signing up for something you're only mildly curious about, downloading a gated PDF or whitepaper,
+          claiming a one-time trial or discount code, testing how a product's onboarding emails actually
+          look during development, or registering for a forum or service you expect to use exactly once.
+          In every one of these, the value of the address to you is finite and short &mdash; you need it to
+          work for a few minutes, and then it's fine if it never exists again. See
+          <a href="temp-email-uses.html">Common Uses for Temporary Email</a> for a more complete rundown of
+          specific scenarios.
+        </p>
+      </section>
+
+      <section>
+        <h2>What it's genuinely not good for</h2>
+        <p>
+          Anything you might need to prove later, revisit, or recover. That includes password resets and
+          account-recovery flows (if you lose access to the disposable address, you've locked yourself out
+          permanently, with no recovery path), financial or medical correspondence, anything with legal
+          weight, and any account you actually intend to keep using. It's also, by definition, not private:
+          most disposable-mail providers offer no authentication stronger than "know or guess the address,"
+          so anyone who has it can read what's inside. Treat it as a shared, temporary mailbox, never a
+          secure one.
+        </p>
+        <p>
+          It's also worth knowing upfront that plenty of services deliberately block known disposable-email
+          domains to prevent free-trial abuse and fake signups &mdash; that's a policy decision on their
+          end, not a flaw in the tool, and no disposable-email provider can promise to get around it. The
+          <a href="faq.html">FAQ</a> covers this specific situation in more depth.
+        </p>
+      </section>
+
+      <section>
+        <h2>The trust question</h2>
+        <p>
+          Because a disposable-mail provider technically has access to whatever passes through its servers,
+          the honest answer to "can I trust this?" always depends on the provider, not the concept itself.
+          Look for whether the tool is transparent about what it does and doesn't collect, whether there's
+          a real privacy policy rather than boilerplate, and whether the architecture is something you could
+          actually verify. Mailzy's own answer to that is in its <a href="privacy.html">Privacy Policy</a>
+          and <a href="about.html">About</a> page &mdash; there's no backend of ours in the middle at all,
+          so there's nothing of ours to trust beyond the client-side code itself.
+        </p>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <p class="site-footer__links">
+        <a href="index.html">Inbox</a>
+        <a href="about.html">About</a>
+        <a href="how-it-works.html">How It Works</a>
+        <a href="faq.html">FAQ</a>
+        <a href="temp-email-uses.html">Common Uses</a>
+        <a href="online-privacy-guide.html">Privacy Guide</a>
+        <a href="privacy.html">Privacy Policy</a>
+        <a href="contact.html">Contact Us</a>
+      </p>
+      <p>&copy; <span id="footerYear"></span> Mailzy.</p>
+    </footer>
+  </div>
+
+  <script>
+    var fy = document.getElementById('footerYear');
+    if (fy) fy.textContent = new Date().getFullYear();
+
+    var btn = document.getElementById('themeToggleBtn');
+    var icon = document.getElementById('themeToggleIcon');
+    var label = document.getElementById('themeToggleLabel');
+    function applyTheme(theme) {
+      document.documentElement.dataset.theme = theme;
+      try {
+        localStorage.setItem('theme', theme);
+      } catch (e) {}
+      icon.textContent = theme === 'light' ? '☀️' : '🌙';
+      label.textContent = theme === 'light' ? 'Light Mode' : 'Dark Mode';
+      btn.setAttribute('aria-pressed', theme === 'light' ? 'true' : 'false');
+    }
+    btn.addEventListener('click', function () {
+      var current = document.documentElement.dataset.theme === 'light' ? 'light' : 'dark';
+      applyTheme(current === 'light' ? 'dark' : 'light');
+    });
+    applyTheme(document.documentElement.dataset.theme === 'light' ? 'light' : 'dark');
+  </script>
+  <script src="js/reveal.js"></script>
+</body>
+</html>

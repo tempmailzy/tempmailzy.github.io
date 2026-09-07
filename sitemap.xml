@@ -21,6 +21,21 @@
     <priority>0.5</priority>
   </url>
   <url>
+    <loc>https://tempmailzy.github.io/disposable-email-guide.html</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  <url>
+    <loc>https://tempmailzy.github.io/temp-email-uses.html</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  <url>
+    <loc>https://tempmailzy.github.io/online-privacy-guide.html</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  <url>
     <loc>https://tempmailzy.github.io/privacy.html</loc>
     <changefreq>yearly</changefreq>
     <priority>0.3</priority>

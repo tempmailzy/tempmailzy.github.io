@@ -1,0 +1,211 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>How to Protect Your Privacy Online — Mailzy</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="description" content="Practical, specific steps for reducing how much of your personal data gets collected online — email hygiene, tracking, passwords, and where temporary email actually fits in." />
+  <meta name="robots" content="index, follow" />
+  <meta name="theme-color" content="#0b0c14" />
+  <link rel="canonical" href="https://tempmailzy.github.io/online-privacy-guide.html" />
+  <meta name="google-adsense-account" content="ca-pub-9466250545587012" />
+
+  <link rel="icon" href="favicon.svg" type="image/svg+xml" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap"
+    rel="stylesheet"
+  />
+  <link rel="stylesheet" href="css/styles.css" />
+
+  <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "Article",
+      "headline": "How to Protect Your Privacy Online",
+      "description": "Practical steps for reducing how much personal data gets collected online, including where temporary email fits in.",
+      "url": "https://tempmailzy.github.io/online-privacy-guide.html",
+      "publisher": { "@type": "Organization", "name": "Mailzy" }
+    }
+  </script>
+
+  <script>
+    (function () {
+      try {
+        var stored = localStorage.getItem('theme');
+        document.documentElement.dataset.theme = stored === 'light' ? 'light' : 'dark';
+      } catch (e) {
+        document.documentElement.dataset.theme = 'dark';
+      }
+    })();
+  </script>
+</head>
+<body>
+  <nav class="topnav">
+    <div class="topnav__inner">
+      <a class="brand" href="index.html" style="text-decoration: none;">
+        <span class="brand-mark" aria-hidden="true">
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M6 17V7l6 7 6-7v10" />
+          </svg>
+        </span>
+        <span class="brand-name">Mail<span class="brand-accent">zy</span></span>
+      </a>
+
+      <div class="nav-actions">
+        <button type="button" class="theme-toggle" id="themeToggleBtn" aria-pressed="false">
+          <span class="theme-toggle__icon" id="themeToggleIcon" aria-hidden="true">🌙</span>
+          <span id="themeToggleLabel">Dark Mode</span>
+        </button>
+      </div>
+    </div>
+  </nav>
+
+  <div class="page">
+    <main class="legal-page">
+      <h1>How to Protect Your Privacy Online</h1>
+      <p class="legal-updated">Practical steps, in rough order of effort-to-benefit — not a scare piece.</p>
+
+      <section>
+        <p>
+          Most online privacy advice is either too vague to act on ("be careful what you share!") or so
+          extreme it's impractical for daily life. This is a shorter list of specific, actually usable
+          habits, roughly ordered from "costs you nothing" to "worth doing if you care a lot."
+        </p>
+      </section>
+
+      <section>
+        <h2>Compartmentalize your email addresses</h2>
+        <p>
+          A single email address used for banking, shopping, social media, forums, and every free trial
+          you've ever signed up for is a single point of correlation &mdash; a data breach at any one of
+          those services exposes an address that's also tied to everything else. Splitting usage across a
+          few addresses limits the blast radius:
+        </p>
+        <ul>
+          <li>
+            <strong>A primary address</strong> for people and services you actually trust and expect to
+            hear from long-term &mdash; banking, close contacts, your employer.
+          </li>
+          <li>
+            <strong>An alias or masking service</strong> (Firefox Relay, SimpleLogin, or similar) for
+            everyday signups you want to keep long-term access to, without exposing your real address.
+          </li>
+          <li>
+            <strong>A temporary/disposable address</strong> for the one-off cases &mdash; a single
+            download, a trial you're only mildly curious about, a forum account you'll use once. See
+            <a href="disposable-email-guide.html">What Is a Disposable Email Address?</a> for exactly where
+            this fits versus the option above.
+          </li>
+        </ul>
+      </section>
+
+      <section>
+        <h2>Assume every "free" gated download is a lead-generation form</h2>
+        <p>
+          When a site asks for your email before letting you download a guide or template, that request
+          usually exists to feed a marketing funnel, not to deliver the file. If you have no interest in
+          the follow-up emails, treat the request accordingly &mdash; a real address you don't mind
+          hearing from occasionally, or a temporary one if you'd rather not be added to any list at all.
+        </p>
+      </section>
+
+      <section>
+        <h2>Use a password manager and stop reusing passwords</h2>
+        <p>
+          This is the single highest-leverage privacy and security habit that exists, and it has nothing
+          to do with email. Password reuse across sites means one breached, low-security site (a forum, a
+          small e-commerce store) can be used to try the same credentials against your bank or email
+          account. A password manager that generates and stores a unique password per site removes this
+          risk almost entirely, for less ongoing effort than remembering passwords yourself.
+        </p>
+      </section>
+
+      <section>
+        <h2>Turn on two-factor authentication where it matters most</h2>
+        <p>
+          Prioritize your email account first &mdash; it's usually the "master key" that can reset access
+          to everything else via password-reset links &mdash; then banking, then anything else with
+          financial or identity stakes. An authenticator app is meaningfully stronger than SMS-based codes,
+          since SMS can be intercepted via SIM-swap attacks; use it where the option exists.
+        </p>
+      </section>
+
+      <section>
+        <h2>Be deliberate about browser tracking, not absolutist</h2>
+        <p>
+          Third-party cookies and cross-site tracking scripts build a profile of your browsing across
+          sites you never explicitly agreed to share data with. A browser with reasonable tracking
+          protection turned on by default, combined with periodically clearing cookies for sites you don't
+          regularly use, cuts down on this without requiring you to relearn how to use the internet.
+          Declining non-essential cookies on consent banners, when you're offered a real choice, is a
+          small but genuine habit worth keeping.
+        </p>
+      </section>
+
+      <section>
+        <h2>Read the privacy policy for anything that actually matters</h2>
+        <p>
+          Nobody reads privacy policies for every site they glance at, and that's fine. But for anything
+          you're trusting with real personal or financial information &mdash; a bank, a health app, a
+          service storing documents &mdash; it's worth specifically checking what data is collected, how
+          long it's kept, and whether it's sold or shared with third parties. A policy that's vague,
+          evasive, or impossible to find at all is itself useful information.
+        </p>
+      </section>
+
+      <section>
+        <h2>Know the limits of any single tool</h2>
+        <p>
+          No individual habit here — temporary email included — makes you anonymous or untouchable online.
+          Each one closes off a specific, real exposure. A temporary address stops a single one-off signup
+          from following you forever; it doesn't hide your IP address, browsing history, or anything else
+          about how you use the internet. Layering a few of these habits together, applied to the
+          situations they actually fit, gets you most of the realistic benefit without turning everyday
+          browsing into a chore. Mailzy's own approach to this — no accounts, no backend, no tracking of
+          its own — is covered in detail on the <a href="about.html">About</a> page.
+        </p>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <p class="site-footer__links">
+        <a href="index.html">Inbox</a>
+        <a href="about.html">About</a>
+        <a href="how-it-works.html">How It Works</a>
+        <a href="faq.html">FAQ</a>
+        <a href="disposable-email-guide.html">Disposable Email Guide</a>
+        <a href="temp-email-uses.html">Common Uses</a>
+        <a href="privacy.html">Privacy Policy</a>
+        <a href="contact.html">Contact Us</a>
+      </p>
+      <p>&copy; <span id="footerYear"></span> Mailzy.</p>
+    </footer>
+  </div>
+
+  <script>
+    var fy = document.getElementById('footerYear');
+    if (fy) fy.textContent = new Date().getFullYear();
+
+    var btn = document.getElementById('themeToggleBtn');
+    var icon = document.getElementById('themeToggleIcon');
+    var label = document.getElementById('themeToggleLabel');
+    function applyTheme(theme) {
+      document.documentElement.dataset.theme = theme;
+      try {
+        localStorage.setItem('theme', theme);
+      } catch (e) {}
+      icon.textContent = theme === 'light' ? '☀️' : '🌙';
+      label.textContent = theme === 'light' ? 'Light Mode' : 'Dark Mode';
+      btn.setAttribute('aria-pressed', theme === 'light' ? 'true' : 'false');
+    }
+    btn.addEventListener('click', function () {
+      var current = document.documentElement.dataset.theme === 'light' ? 'light' : 'dark';
+      applyTheme(current === 'light' ? 'dark' : 'light');
+    });
+    applyTheme(document.documentElement.dataset.theme === 'light' ? 'light' : 'dark');
+  </script>
+  <script src="js/reveal.js"></script>
+</body>
+</html>
