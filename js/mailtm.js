@@ -100,6 +100,16 @@
     throw new MailTmError('Could not reach mail.gw.', { cause: lastError });
   }
 
+  /** Lowercases and validates a user-chosen local part against the
+   *  shape mail.gw accounts require: alnum, dot, underscore, hyphen,
+   *  starting/ending on an alnum character. Returns null (caller
+   *  shows an inline error) instead of silently mangling input. */
+  function sanitizeLocalPart(raw) {
+    const cleaned = String(raw || '').trim().toLowerCase();
+    if (!/^[a-z0-9][a-z0-9._-]{0,38}[a-z0-9]$|^[a-z0-9]$/.test(cleaned)) return null;
+    return cleaned;
+  }
+
   function randomLocalPart() {
     const letters = 'abcdefghijklmnopqrstuvwxyz';
     const digits = '0123456789';
@@ -148,14 +158,39 @@
   }
 
   /**
-   * Creates an account, retrying with a fresh random local
-   * part on address collisions (max `maxAttempts` tries).
-   * Transient network/5xx/429 failures are already retried
-   * one layer down inside fetchWithRetry.
+   * Creates an account. With `desiredLocalPart`, tries that exact
+   * address once — a collision is surfaced as a distinct error
+   * (ADDRESS_TAKEN) so the caller can ask the user for a different
+   * name instead of silently substituting a random one. Without it,
+   * retries with a fresh random local part on collisions (max
+   * `maxAttempts` tries). Transient network/5xx/429 failures are
+   * already retried one layer down inside fetchWithRetry.
    */
-  async function createAccountWithRetry(maxAttempts = 3) {
+  async function createAccountWithRetry(maxAttempts = 3, desiredLocalPart = null) {
     const domains = await getActiveDomains();
     const domain = domains[Math.floor(Math.random() * domains.length)].domain;
+
+    if (desiredLocalPart) {
+      const cleaned = sanitizeLocalPart(desiredLocalPart);
+      if (!cleaned) {
+        throw new MailTmError('Use only letters, numbers, dots, and hyphens.', { status: 'INVALID_LOCAL_PART' });
+      }
+      const address = `${cleaned}@${domain}`;
+      const password = randomPassword();
+      const res = await fetchWithRetry(`${API_BASE}/accounts`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ address, password }),
+      });
+      if (res.ok) {
+        const account = await res.json();
+        return { account, address, password };
+      }
+      if (res.status === 422 || res.status === 409) {
+        throw new MailTmError(`"${cleaned}" is already taken. Try another name.`, { status: 'ADDRESS_TAKEN' });
+      }
+      throw new MailTmError('mail.gw rejected the account request.', { status: res.status });
+    }
 
     let lastError;
     for (let attempt = 1; attempt <= maxAttempts; attempt++) {
@@ -223,6 +258,21 @@
     return res.json();
   }
 
+  /** Downloads one attachment as a Blob. `downloadUrl` comes straight
+   *  from the message-detail response (a path or absolute URL under
+   *  api.mail.gw) and needs the same bearer token as everything else —
+   *  it is never fetched from any other origin. Caller is responsible
+   *  for turning the Blob into a save-as download; this never touches
+   *  innerHTML or renders the bytes as anything but opaque data. */
+  async function downloadAttachment(token, downloadUrl) {
+    const url = /^https?:\/\//i.test(downloadUrl) ? downloadUrl : `${API_BASE}${downloadUrl}`;
+    const res = await fetch(url, { headers: { Authorization: `Bearer ${token}` } });
+    if (!res.ok) {
+      throw new MailTmError('Could not download that attachment.', { status: res.status });
+    }
+    return res.blob();
+  }
+
   /** Best-effort account deletion — the mailbox is disposable either way. */
   async function deleteAccount(token, accountId) {
     try {
@@ -241,6 +291,7 @@
     getToken,
     listMessages,
     getMessage,
+    downloadAttachment,
     deleteAccount,
   };
 })(window);

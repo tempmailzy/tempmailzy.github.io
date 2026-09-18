@@ -216,10 +216,29 @@
               <label class="address-card__label" for="addressField">Temporary Email Address</label>
               <input type="text" id="addressField" class="address-field" readonly spellcheck="false" />
             </div>
+            <button type="button" class="btn btn--outline btn--round" id="qrBtn" aria-label="Show QR code for this address">
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1" /><rect x="14" y="3" width="7" height="7" rx="1" /><rect x="3" y="14" width="7" height="7" rx="1" /><path d="M14 14h3v3M14 21h3M21 14v3M21 21v.01" /></svg>
+            </button>
             <button type="button" class="btn btn--primary btn--pill" id="copyBtn">
               <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="9" width="13" height="13" rx="2" /><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" /></svg>
               <span id="copyBtnLabel">Copy</span>
             </button>
+          </div>
+
+          <div class="address-customize">
+            <button type="button" class="address-customize__toggle" id="customizeAddressBtn" aria-expanded="false" aria-controls="customizeForm">
+              <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5z" /></svg>
+              Choose your own name
+            </button>
+            <form class="customize-form" id="customizeForm" hidden>
+              <label class="sr-only" for="customLocalPartInput">Custom address name</label>
+              <input type="text" id="customLocalPartInput" placeholder="yourname" autocomplete="off" spellcheck="false" maxlength="40" />
+              <button type="submit" class="btn btn--primary btn--pill">
+                <span id="customizeSubmitLabel">Use this name</span>
+              </button>
+              <button type="button" class="btn btn--outline btn--pill" id="cancelCustomizeBtn">Cancel</button>
+            </form>
+            <p class="customize-form__error" id="customizeError" hidden role="alert"></p>
           </div>
 
           <div class="expiry-row">
@@ -251,6 +270,9 @@
                 <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7" /><path d="m21 21-4.3-4.3" /></svg>
                 <input type="search" id="messageSearchInput" placeholder="Search emails…" autocomplete="off" />
               </label>
+              <button type="button" class="btn btn--outline btn--round" id="notifyToggleBtn" aria-pressed="false" aria-label="Enable notifications for new mail">
+                <svg class="icon-bell" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 8a6 6 0 1 1 12 0c0 4 2 5 2 6H4c0-1 2-2 2-6" /><path d="M10 20a2 2 0 0 0 4 0" /></svg>
+              </button>
               <button type="button" class="btn btn--outline btn--round" id="refreshBtn" aria-label="Refresh inbox">
                 <svg class="icon-refresh" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a9 9 0 1 1-2.64-6.36" /><path d="M21 3v6h-6" /></svg>
               </button>
@@ -321,6 +343,55 @@
           <p>Discard it at any time without affecting your primary inbox.</p>
         </div>
       </section>
+
+      <section class="about-copy">
+        <h2>What is a temporary email address?</h2>
+        <p>
+          A temporary email address is a real, working inbox that isn't tied to your identity and isn't meant
+          to last. Mailzy generates one the moment this page loads &mdash; no sign-up form, no password to
+          invent, no phone number to hand over. Anything sent to it shows up below in real time, and when
+          you're done with it, you just close the tab. Nothing about it needs to be remembered, backed up, or
+          logged into again.
+        </p>
+
+        <h2>Why use one instead of your real inbox</h2>
+        <p>
+          Most sites that ask for an email address don't actually need to keep it. A forum you're posting to
+          once, a coupon code gated behind a "confirm your email" click, a free trial you want to try without
+          committing a real account to it &mdash; all of these want an address today and give you no benefit
+          for handing over your primary one. The moment a real address sits in one more company's database, it
+          becomes one more place a data breach, a resold marketing list, or a plain old spam campaign can reach
+          you. A disposable address absorbs that exposure instead. If it ends up on a spam list six months from
+          now, that's fine &mdash; it was never going to exist that long anyway.
+        </p>
+
+        <h2>How Mailzy is built</h2>
+        <p>
+          There's no account system behind Mailzy and no database of past addresses. Each inbox is provisioned
+          against a temporary-mail API on the fly, held only in the browser tab's memory, and never written to
+          local storage &mdash; refreshing the page or closing the tab lets it go. If the primary mail provider
+          is briefly unreachable, Mailzy quietly retries against a second one rather than showing an error, so
+          a single provider's downtime doesn't cost you a working inbox. Message content is always rendered as
+          plain text, never as raw HTML, which closes off the usual way a malicious email tries to run code in
+          your browser.
+        </p>
+        <p>
+          Beyond the basic inbox, you can pick your own name for the address instead of taking the randomly
+          generated one, pull up a QR code to carry the address to another device without retyping it, download
+          any file attachments a message includes, and turn on browser notifications so a reply doesn't sit
+          unnoticed in a background tab.
+        </p>
+
+        <h2>What it isn't for</h2>
+        <p>
+          A disposable inbox is not a private one. Whoever controls the mail provider behind it can, in
+          principle, read what passes through — the same is true of most free temporary-mail services, not just
+          this one. Treat it the way you'd treat a shared mailbox at a hostel front desk: fine for a verification
+          code or a one-time download link, wrong for anything financial, medical, or otherwise sensitive. And
+          because the address is disposable by design, expect it to stop receiving mail eventually — it's not a
+          replacement for a real account you intend to keep using.
+        </p>
+      </section>
     </main>
 
     <aside class="shell__detail" id="detailPanel"></aside>
@@ -339,6 +410,20 @@
       <p class="message-detail__meta" id="messageFrom"></p>
       <h2 class="message-detail__subject" id="messageSubject"></h2>
       <pre class="message-detail__body" id="messageBody"></pre>
+      <div class="message-detail__attachments" id="messageAttachments"></div>
+    </div>
+  </div>
+
+  <!-- QR code overlay — renders entirely client-side (js/qrcode.min.js),
+       the address never leaves the browser to produce this image. -->
+  <div class="qr-overlay" id="qrOverlay" hidden>
+    <div class="qr-modal" role="dialog" aria-modal="true" aria-labelledby="qrModalTitle">
+      <button type="button" class="btn btn--icon qr-modal__close" id="closeQrBtn" aria-label="Close QR code">
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12" /></svg>
+      </button>
+      <h2 id="qrModalTitle" class="qr-modal__title">Scan to use this address</h2>
+      <div class="qr-modal__code" id="qrCodeContainer"></div>
+      <p class="qr-modal__address" id="qrAddressText"></p>
     </div>
   </div>
 
@@ -347,6 +432,7 @@
        them too, without stealing focus. -->
   <div class="toast-region" id="toastRegion" aria-live="polite" aria-atomic="false"></div>
 
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js" defer></script>
   <script src="js/shell.js"></script>
   <script src="js/mailtm.js"></script>
   <script src="js/guerrillamail.js"></script>

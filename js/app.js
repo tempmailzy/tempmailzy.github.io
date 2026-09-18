@@ -35,6 +35,19 @@
     sidebarUnreadCount: document.getElementById('sidebarUnreadCount'),
     sidebarGenerateBtn: document.getElementById('sidebarGenerateBtn'),
     messageSearchInput: document.getElementById('messageSearchInput'),
+    customizeAddressBtn: document.getElementById('customizeAddressBtn'),
+    customizeForm: document.getElementById('customizeForm'),
+    customLocalPartInput: document.getElementById('customLocalPartInput'),
+    customizeSubmitLabel: document.getElementById('customizeSubmitLabel'),
+    cancelCustomizeBtn: document.getElementById('cancelCustomizeBtn'),
+    customizeError: document.getElementById('customizeError'),
+    qrBtn: document.getElementById('qrBtn'),
+    qrOverlay: document.getElementById('qrOverlay'),
+    qrCodeContainer: document.getElementById('qrCodeContainer'),
+    qrAddressText: document.getElementById('qrAddressText'),
+    closeQrBtn: document.getElementById('closeQrBtn'),
+    messageAttachments: document.getElementById('messageAttachments'),
+    notifyToggleBtn: document.getElementById('notifyToggleBtn'),
   };
 
   /** @type {{provider:'mailgw'|'guerrilla', token?:string, account?:object, sidToken?:string, createdAt?:number, address:string, messages:object[], loadedPages:number, totalItems:number|null}|null}
@@ -47,6 +60,8 @@
   let pollInFlight = false;
   let lastFocusedEl = null;
   let countdownTimer = null;
+  let customizeInFlight = false;
+  let notificationsEnabled = false;
 
   function showLoading() {
     els.loadingState.hidden = false;
@@ -77,9 +92,11 @@
   }
 
   /** Attempts the priority provider, mail.gw. Throws on failure —
-   *  caller decides whether to fall back. */
-  async function attemptMailGw() {
-    const { account, address, password } = await MailTm.createAccountWithRetry(3);
+   *  caller decides whether to fall back. `desiredLocalPart`, when
+   *  given, is passed straight through to MailTm — see its own retry
+   *  semantics for what happens on a name collision. */
+  async function attemptMailGw(desiredLocalPart) {
+    const { account, address, password } = await MailTm.createAccountWithRetry(3, desiredLocalPart);
     const token = await MailTm.getToken(address, password);
     return { provider: 'mailgw', token, account, address, messages: [], loadedPages: 0, totalItems: null };
   }
@@ -100,11 +117,12 @@
   async function init() {
     stopPolling();
     showLoading();
+    let newSession;
     try {
-      session = await attemptMailGw();
+      newSession = await attemptMailGw();
     } catch (primaryErr) {
       try {
-        session = await attemptGuerrilla();
+        newSession = await attemptGuerrilla();
       } catch (backupErr) {
         session = null;
         stopCountdown();
@@ -112,6 +130,17 @@
         return;
       }
     }
+    activateSession(newSession, null);
+    showTicket();
+  }
+
+  /** Swaps in a freshly created session and resets everything that's
+   *  scoped to "the current mailbox" — address field, message list,
+   *  polling, countdown. Shared by init() and submitCustomAddress()
+   *  so both activate a session the same way. Best-effort deletes
+   *  `old`, if given, exactly like newAddress() already did inline. */
+  function activateSession(newSession, old) {
+    session = newSession;
     els.addressField.value = session.address;
     els.copyBtnLabel.textContent = 'Copy';
     els.inboxStatus.textContent = 'Waiting for incoming mail…';
@@ -119,9 +148,57 @@
     if (els.sidebarUnreadCount) els.sidebarUnreadCount.textContent = '0';
     if (els.messageSearchInput) els.messageSearchInput.value = '';
     els.loadMoreBtn.hidden = true;
-    showTicket();
     startPolling({ immediate: true });
     startCountdown();
+    if (old) {
+      if (old.provider === 'mailgw') {
+        MailTm.deleteAccount(old.token, old.account.id);
+      } else {
+        GuerrillaMail.forgetMe(old.sidToken, old.address);
+      }
+    }
+  }
+
+  function openCustomizeForm() {
+    els.customizeForm.hidden = false;
+    els.customizeAddressBtn.setAttribute('aria-expanded', 'true');
+    els.customizeError.hidden = true;
+    els.customLocalPartInput.value = '';
+    els.customLocalPartInput.focus();
+  }
+
+  function closeCustomizeForm() {
+    els.customizeForm.hidden = true;
+    els.customizeAddressBtn.setAttribute('aria-expanded', 'false');
+    els.customizeError.hidden = true;
+  }
+
+  /** Tries to swap the current mailbox for one at a name the user
+   *  chose. On a collision or invalid name, shows the error inline
+   *  in the customize form and leaves the existing session untouched
+   *  — this deliberately never falls back to Guerrilla Mail or to a
+   *  random name, since that would silently give the user a
+   *  different address than the one they asked for. */
+  async function submitCustomAddress(rawLocalPart) {
+    if (customizeInFlight || !session) return;
+    customizeInFlight = true;
+    els.customizeError.hidden = true;
+    els.customizeSubmitLabel.textContent = 'Creating…';
+    const old = session;
+    try {
+      const newSession = await attemptMailGw(rawLocalPart);
+      stopPolling();
+      stopCountdown();
+      activateSession(newSession, old);
+      closeCustomizeForm();
+      showToast('Custom address issued', 'refresh');
+    } catch (err) {
+      els.customizeError.textContent = (err && err.message) || 'Could not create that address. Please try again.';
+      els.customizeError.hidden = false;
+    } finally {
+      customizeInFlight = false;
+      els.customizeSubmitLabel.textContent = 'Use this name';
+    }
   }
 
   /** Ticks the retention indicator. mail.gw reports real createdAt/
@@ -258,7 +335,7 @@
       const isFirstLoad = session.messages.length === 0;
       const freshMessages = mergeMessages(messages, { prepend: true });
       const newCount = freshMessages.length;
-      renderMessageList();
+      renderMessageList(isFirstLoad ? null : freshMessages.map((m) => m.id));
 
       if (isFirstLoad) {
         els.inboxStatus.textContent =
@@ -273,6 +350,7 @@
         } else {
           showToast(`${newCount} new messages arrived`, 'mail');
         }
+        notifyNewMail(freshMessages);
       } else {
         els.inboxStatus.textContent = `${session.messages.length} message${session.messages.length === 1 ? '' : 's'}.`;
       }
@@ -348,7 +426,7 @@
     );
   }
 
-  function renderMessageList() {
+  function renderMessageList(freshIds) {
     if (!session) return;
     const allMessages = session.messages;
     const term = currentSearchTerm();
@@ -387,9 +465,10 @@
     } else {
       messages.forEach((m) => {
         const li = document.createElement('li');
+        const isFresh = Array.isArray(freshIds) && freshIds.includes(m.id);
         const btn = document.createElement('button');
         btn.type = 'button';
-        btn.className = 'message-item' + (m.seen === false ? ' is-unread' : '');
+        btn.className = 'message-item' + (m.seen === false ? ' is-unread' : '') + (isFresh ? ' message-item--enter' : '');
 
         const senderLabel = (m.from && (m.from.name || m.from.address)) || 'Unknown sender';
 
@@ -465,12 +544,115 @@
         bodyText = '(no readable content)';
       }
       els.messageBody.textContent = bodyText;
+      renderAttachments(full.attachments);
 
       els.messageOverlay.hidden = false;
       els.closeMessageBtn.focus();
       document.addEventListener('keydown', onOverlayKeydown);
     } catch (err) {
       els.inboxStatus.textContent = 'Unable to open that message. Please try again.';
+    }
+  }
+
+  function formatBytes(bytes) {
+    if (!Number.isFinite(bytes) || bytes <= 0) return '';
+    const units = ['B', 'KB', 'MB', 'GB'];
+    let n = bytes;
+    let i = 0;
+    while (n >= 1024 && i < units.length - 1) {
+      n /= 1024;
+      i++;
+    }
+    return `${i > 0 && n < 10 ? n.toFixed(1) : Math.round(n)} ${units[i]}`;
+  }
+
+  function createAttachmentIcon() {
+    const svg = document.createElementNS(SVG_NS, 'svg');
+    svg.setAttribute('viewBox', '0 0 24 24');
+    svg.setAttribute('width', '16');
+    svg.setAttribute('height', '16');
+    svg.setAttribute('fill', 'none');
+    svg.setAttribute('stroke', 'currentColor');
+    svg.setAttribute('stroke-width', '2.2');
+    svg.setAttribute('stroke-linecap', 'round');
+    svg.setAttribute('stroke-linejoin', 'round');
+    const path = document.createElementNS(SVG_NS, 'path');
+    path.setAttribute(
+      'd',
+      'M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48'
+    );
+    svg.appendChild(path);
+    return svg;
+  }
+
+  /** Renders each attachment as filename + size + a Download button —
+   *  metadata and a byte fetch only, never anything that touches
+   *  innerHTML with message-derived content. Guerrilla Mail messages
+   *  have no attachments field at all, so this is a no-op for them. */
+  function renderAttachments(attachments) {
+    els.messageAttachments.innerHTML = '';
+    const list = Array.isArray(attachments) ? attachments.filter((a) => a && a.filename) : [];
+    if (list.length === 0) return;
+
+    const heading = document.createElement('p');
+    heading.className = 'message-detail__attachments-heading';
+    heading.textContent = `${list.length} attachment${list.length === 1 ? '' : 's'}`;
+    els.messageAttachments.appendChild(heading);
+
+    list.forEach((att) => {
+      const row = document.createElement('div');
+      row.className = 'attachment-row';
+
+      const icon = document.createElement('span');
+      icon.className = 'attachment-row__icon';
+      icon.setAttribute('aria-hidden', 'true');
+      icon.appendChild(createAttachmentIcon());
+
+      const name = document.createElement('span');
+      name.className = 'attachment-row__name';
+      name.textContent = att.filename;
+
+      const size = document.createElement('span');
+      size.className = 'attachment-row__size';
+      size.textContent = formatBytes(att.size);
+
+      const dlBtn = document.createElement('button');
+      dlBtn.type = 'button';
+      dlBtn.className = 'btn btn--outline btn--pill attachment-row__download';
+      dlBtn.textContent = 'Download';
+      dlBtn.addEventListener('click', () => downloadOneAttachment(att, dlBtn));
+
+      row.appendChild(icon);
+      row.appendChild(name);
+      row.appendChild(size);
+      row.appendChild(dlBtn);
+      els.messageAttachments.appendChild(row);
+    });
+  }
+
+  /** Fetches the attachment as a Blob (authenticated, mail.gw only —
+   *  Guerrilla Mail messages never reach here since they have no
+   *  attachments array) and saves it via a throwaway object URL. */
+  async function downloadOneAttachment(att, btn) {
+    if (!session || session.provider !== 'mailgw') return;
+    const originalLabel = btn.textContent;
+    btn.disabled = true;
+    btn.textContent = 'Downloading…';
+    try {
+      const blob = await MailTm.downloadAttachment(session.token, att.downloadUrl);
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = att.filename || 'attachment';
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 4000);
+    } catch (err) {
+      showToast('Could not download that attachment', 'refresh');
+    } finally {
+      btn.disabled = false;
+      btn.textContent = originalLabel;
     }
   }
 
@@ -491,6 +673,106 @@
 
   function onOverlayKeydown(e) {
     if (e.key === 'Escape') closeMessage();
+  }
+
+  /** Renders a QR code for the current address entirely client-side
+   *  via the bundled qrcodejs library — the address is never sent
+   *  anywhere to produce this image. Fixed black-on-white regardless
+   *  of theme, since that's what keeps it reliably scannable. */
+  function openQrModal() {
+    if (!session) return;
+    if (typeof QRCode === 'undefined') {
+      showToast('The QR code library failed to load. Please try again.', 'refresh');
+      return;
+    }
+    els.qrCodeContainer.innerHTML = '';
+    new QRCode(els.qrCodeContainer, {
+      text: session.address,
+      width: 200,
+      height: 200,
+      colorDark: '#000000',
+      colorLight: '#ffffff',
+      correctLevel: QRCode.CorrectLevel.M,
+    });
+    els.qrAddressText.textContent = session.address;
+    lastFocusedEl = document.activeElement;
+    els.qrOverlay.hidden = false;
+    els.closeQrBtn.focus();
+    document.addEventListener('keydown', onQrOverlayKeydown);
+  }
+
+  function closeQrModal() {
+    els.qrOverlay.hidden = true;
+    document.removeEventListener('keydown', onQrOverlayKeydown);
+    if (lastFocusedEl && typeof lastFocusedEl.focus === 'function') {
+      lastFocusedEl.focus();
+    }
+  }
+
+  function onQrOverlayKeydown(e) {
+    if (e.key === 'Escape') closeQrModal();
+  }
+
+  function updateNotifyButtonUI() {
+    if (!els.notifyToggleBtn) return;
+    els.notifyToggleBtn.setAttribute('aria-pressed', notificationsEnabled ? 'true' : 'false');
+    els.notifyToggleBtn.classList.toggle('is-active', notificationsEnabled);
+    els.notifyToggleBtn.setAttribute(
+      'aria-label',
+      notificationsEnabled ? 'Disable notifications for new mail' : 'Enable notifications for new mail'
+    );
+  }
+
+  /** Notification permission is requested only from this click
+   *  handler — never on page load — per the Notifications API's own
+   *  best-practice expectations. Turning it back off is purely a
+   *  local UI flag; the browser-level permission grant is untouched
+   *  either way, since there's no API to revoke it from script. */
+  async function toggleNotifications() {
+    if (!('Notification' in window)) {
+      showToast('Notifications are not supported in this browser', 'refresh');
+      return;
+    }
+    if (notificationsEnabled) {
+      notificationsEnabled = false;
+      updateNotifyButtonUI();
+      showToast('Notifications turned off', 'refresh');
+      return;
+    }
+    if (Notification.permission === 'denied') {
+      showToast('Notifications are blocked for this site in your browser settings', 'refresh');
+      return;
+    }
+    const permission = Notification.permission === 'default' ? await Notification.requestPermission() : Notification.permission;
+    if (permission === 'granted') {
+      notificationsEnabled = true;
+      updateNotifyButtonUI();
+      showToast("You'll be notified when new mail arrives", 'check');
+    } else {
+      showToast('Notification permission was not granted', 'refresh');
+    }
+  }
+
+  /** Only fires while the tab is hidden/unfocused — the in-page toast
+   *  already covers the foreground case, so this avoids a redundant
+   *  second alert for the exact same event. */
+  function notifyNewMail(freshMessages) {
+    if (!notificationsEnabled || !('Notification' in window) || Notification.permission !== 'granted') return;
+    if (!document.hidden) return;
+    const count = freshMessages.length;
+    const sender = (freshMessages[0].from && (freshMessages[0].from.name || freshMessages[0].from.address)) || '';
+    const title = count === 1 ? 'New mail in Mailzy' : `${count} new messages in Mailzy`;
+    const body = count === 1 && sender ? `From ${sender}` : 'Tap to view your inbox.';
+    try {
+      const notification = new Notification(title, { body, tag: 'mailzy-new-mail' });
+      notification.onclick = () => {
+        window.focus();
+        notification.close();
+      };
+    } catch {
+      // Denied at the OS level despite permission === 'granted', or
+      // any other platform quirk — never let this break polling.
+    }
   }
 
   // Fixed, author-written markup only (never user/message data) — safe
@@ -672,6 +954,29 @@
   els.messageOverlay.addEventListener('click', (e) => {
     if (e.target === els.messageOverlay) closeMessage();
   });
+  if (els.qrBtn) els.qrBtn.addEventListener('click', openQrModal);
+  if (els.closeQrBtn) els.closeQrBtn.addEventListener('click', closeQrModal);
+  if (els.qrOverlay) {
+    els.qrOverlay.addEventListener('click', (e) => {
+      if (e.target === els.qrOverlay) closeQrModal();
+    });
+  }
+  if (els.notifyToggleBtn) els.notifyToggleBtn.addEventListener('click', toggleNotifications);
+  if (els.customizeAddressBtn) {
+    els.customizeAddressBtn.addEventListener('click', () => {
+      if (els.customizeForm.hidden) openCustomizeForm();
+      else closeCustomizeForm();
+    });
+  }
+  if (els.cancelCustomizeBtn) els.cancelCustomizeBtn.addEventListener('click', closeCustomizeForm);
+  if (els.customizeForm) {
+    els.customizeForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const val = els.customLocalPartInput.value.trim();
+      if (!val) return;
+      submitCustomAddress(val);
+    });
+  }
   document.addEventListener('visibilitychange', onVisibilityChange);
   document.addEventListener('click', (e) => {
     const btn = e.target.closest('button');
