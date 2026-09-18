@@ -414,16 +414,22 @@
     </div>
   </div>
 
-  <!-- QR code overlay — renders entirely client-side (js/qrcode.min.js),
-       the address never leaves the browser to produce this image. -->
+  <!-- QR code overlay — renders entirely client-side (js/qrcode.min.js).
+       Encodes a link back to this same page that lets the scanning
+       device reattach to this exact inbox (see js/app.js boot()). -->
   <div class="qr-overlay" id="qrOverlay" hidden>
     <div class="qr-modal" role="dialog" aria-modal="true" aria-labelledby="qrModalTitle">
       <button type="button" class="btn btn--icon qr-modal__close" id="closeQrBtn" aria-label="Close QR code">
         <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12" /></svg>
       </button>
-      <h2 id="qrModalTitle" class="qr-modal__title">Scan to use this address</h2>
+      <h2 id="qrModalTitle" class="qr-modal__title">Scan to open this inbox on another device</h2>
       <div class="qr-modal__code" id="qrCodeContainer"></div>
       <p class="qr-modal__address" id="qrAddressText"></p>
+      <button type="button" class="btn btn--outline btn--pill qr-modal__copy-link" id="copyQrLinkBtn">
+        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="9" width="13" height="13" rx="2" /><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" /></svg>
+        <span id="copyQrLinkLabel">Copy link instead</span>
+      </button>
+      <p class="qr-modal__warning">Anyone who opens this link can read this inbox — only share it with a device you control.</p>
     </div>
   </div>
 
