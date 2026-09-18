@@ -1,8 +1,13 @@
 /* =========================================================
    Mailzy — UI wiring, polling, state.
-   In-memory only: the active mailbox is intentionally NOT
-   persisted to localStorage/sessionStorage. A refreshed tab
-   losing the address is expected behavior, not a bug.
+   The active session (token/password/sidToken) is intentionally
+   NEVER persisted to localStorage/sessionStorage — a refreshed
+   tab losing the live mailbox is expected behavior, not a bug.
+   Two things the user explicitly asks to keep ARE persisted to
+   localStorage: address history (just address text + a
+   timestamp — see loadAddressHistory()) and saved messages
+   (a text snapshot — see loadSavedMessages()). Neither ever
+   stores a credential.
    ========================================================= */
 (function () {
   'use strict';
@@ -41,6 +46,15 @@
     customizeSubmitLabel: document.getElementById('customizeSubmitLabel'),
     cancelCustomizeBtn: document.getElementById('cancelCustomizeBtn'),
     customizeError: document.getElementById('customizeError'),
+    customDomainSelect: document.getElementById('customDomainSelect'),
+    historyBtn: document.getElementById('historyBtn'),
+    historyOverlay: document.getElementById('historyOverlay'),
+    historyList: document.getElementById('historyList'),
+    closeHistoryBtn: document.getElementById('closeHistoryBtn'),
+    clearHistoryBtn: document.getElementById('clearHistoryBtn'),
+    tabMessagesBtn: document.getElementById('tabMessagesBtn'),
+    tabSavedBtn: document.getElementById('tabSavedBtn'),
+    saveMessageBtn: document.getElementById('saveMessageBtn'),
     qrBtn: document.getElementById('qrBtn'),
     qrOverlay: document.getElementById('qrOverlay'),
     qrCodeContainer: document.getElementById('qrCodeContainer'),
@@ -64,6 +78,15 @@
   let countdownTimer = null;
   let customizeInFlight = false;
   let notificationsEnabled = false;
+  let activeTab = 'messages'; // 'messages' | 'saved'
+  let currentMessageId = null;
+  let currentMessageSource = null; // 'live' | 'saved'
+  let currentFullMessage = null;
+
+  const HISTORY_KEY = 'mailzy-address-history';
+  const HISTORY_MAX = 20;
+  const SAVED_KEY = 'mailzy-saved-messages';
+  const SAVED_MAX = 50;
 
   function showLoading() {
     els.loadingState.hidden = false;
@@ -94,11 +117,12 @@
   }
 
   /** Attempts the priority provider, mail.gw. Throws on failure —
-   *  caller decides whether to fall back. `desiredLocalPart`, when
-   *  given, is passed straight through to MailTm — see its own retry
-   *  semantics for what happens on a name collision. */
-  async function attemptMailGw(desiredLocalPart) {
-    const { account, address, password } = await MailTm.createAccountWithRetry(3, desiredLocalPart);
+   *  caller decides whether to fall back. `desiredLocalPart`/
+   *  `desiredDomain`, when given, are passed straight through to
+   *  MailTm — see its own retry semantics for what happens on a name
+   *  collision or an unrecognized domain. */
+  async function attemptMailGw(desiredLocalPart, desiredDomain) {
+    const { account, address, password } = await MailTm.createAccountWithRetry(3, desiredLocalPart, desiredDomain);
     const token = await MailTm.getToken(address, password);
     return { provider: 'mailgw', token, account, address, messages: [], loadedPages: 0, totalItems: null };
   }
@@ -108,6 +132,32 @@
   async function attemptGuerrilla() {
     const { sidToken, address, createdAt } = await GuerrillaMail.createAddress();
     return { provider: 'guerrilla', sidToken, address, createdAt, messages: [], loadedPages: 0, totalItems: null };
+  }
+
+  /** Creates a fresh Guerrilla Mail inbox and immediately renames it
+   *  to the chosen local part — the custom-name fallback for when
+   *  mail.gw can't create that name itself (down, or rejects it).
+   *  The user still gets the exact name they asked for, just on
+   *  Guerrilla's fixed domain instead of mail.gw's. */
+  async function attemptGuerrillaCustom(desiredLocalPart) {
+    const { sidToken, createdAt } = await GuerrillaMail.createAddress();
+    const renamed = await GuerrillaMail.setEmailUser(sidToken, desiredLocalPart);
+    return {
+      provider: 'guerrilla',
+      sidToken: renamed.sidToken,
+      address: renamed.address,
+      createdAt,
+      messages: [],
+      loadedPages: 0,
+      totalItems: null,
+    };
+  }
+
+  /** Same shape mail.gw itself requires — validated client-side
+   *  before either provider is attempted, so both get a clean name
+   *  and an obviously-bad one never costs a network round trip. */
+  function isValidLocalPart(raw) {
+    return /^[a-z0-9][a-z0-9._-]{0,38}[a-z0-9]$|^[a-z0-9]$/i.test(String(raw || '').trim());
   }
 
   /** mail.gw stays the priority provider; the fallback to Guerrilla
@@ -150,6 +200,9 @@
     if (els.sidebarUnreadCount) els.sidebarUnreadCount.textContent = '0';
     if (els.messageSearchInput) els.messageSearchInput.value = '';
     els.loadMoreBtn.hidden = true;
+    activeTab = 'messages';
+    updateTabButtonsUI();
+    recordAddressHistory(session.address);
     startPolling({ immediate: true });
     startCountdown();
     if (old) {
@@ -218,6 +271,7 @@
     els.customizeError.hidden = true;
     els.customLocalPartInput.value = '';
     els.customLocalPartInput.focus();
+    populateDomainSelect();
   }
 
   function closeCustomizeForm() {
@@ -226,27 +280,70 @@
     els.customizeError.hidden = true;
   }
 
+  /** Lists mail.gw's currently active domains so a custom name can
+   *  target a specific one instead of always getting a random pick.
+   *  Left hidden with just the default option if mail.gw can't be
+   *  reached right now — the name-only submission still works via
+   *  the Guerrilla fallback below regardless. */
+  async function populateDomainSelect() {
+    if (!els.customDomainSelect) return;
+    els.customDomainSelect.innerHTML = '<option value="">Random domain</option>';
+    els.customDomainSelect.hidden = true;
+    try {
+      const domains = await MailTm.getActiveDomains();
+      if (domains.length > 0) {
+        domains.forEach((d) => {
+          const opt = document.createElement('option');
+          opt.value = d.domain;
+          opt.textContent = `@${d.domain}`;
+          els.customDomainSelect.appendChild(opt);
+        });
+        els.customDomainSelect.hidden = domains.length <= 1;
+      }
+    } catch {
+      // mail.gw unreachable — leave the picker hidden, not broken.
+    }
+  }
+
   /** Tries to swap the current mailbox for one at a name the user
-   *  chose. On a collision or invalid name, shows the error inline
-   *  in the customize form and leaves the existing session untouched
-   *  — this deliberately never falls back to Guerrilla Mail or to a
-   *  random name, since that would silently give the user a
-   *  different address than the one they asked for. */
-  async function submitCustomAddress(rawLocalPart) {
+   *  chose. Tries mail.gw first (honoring a chosen domain, if any);
+   *  if mail.gw can't be reached or rejects the name, falls back to
+   *  creating that SAME name on Guerrilla Mail instead of just
+   *  failing outright — the user still gets the exact name they
+   *  asked for, just possibly on a different domain, never a
+   *  different name they didn't ask for. Only a hard error on BOTH
+   *  providers shows in the form. */
+  async function submitCustomAddress(rawLocalPart, desiredDomain) {
     if (customizeInFlight || !session) return;
+    const cleaned = rawLocalPart.trim().toLowerCase();
+    if (!isValidLocalPart(cleaned)) {
+      els.customizeError.textContent = 'Use only letters, numbers, dots, and hyphens.';
+      els.customizeError.hidden = false;
+      return;
+    }
     customizeInFlight = true;
     els.customizeError.hidden = true;
     els.customizeSubmitLabel.textContent = 'Creating…';
     const old = session;
+    let mailGwErr = null;
     try {
-      const newSession = await attemptMailGw(rawLocalPart);
+      let newSession;
+      try {
+        newSession = await attemptMailGw(cleaned, desiredDomain || null);
+      } catch (err) {
+        mailGwErr = err;
+        newSession = await attemptGuerrillaCustom(cleaned);
+      }
       stopPolling();
       stopCountdown();
       activateSession(newSession, old);
       closeCustomizeForm();
       showToast('Custom address issued', 'refresh');
     } catch (err) {
-      els.customizeError.textContent = (err && err.message) || 'Could not create that address. Please try again.';
+      const reason = mailGwErr
+        ? `${mailGwErr.message} The backup service couldn't use that name either.`
+        : (err && err.message) || 'Could not create that address. Please try again.';
+      els.customizeError.textContent = reason;
       els.customizeError.hidden = false;
     } finally {
       customizeInFlight = false;
@@ -302,6 +399,183 @@
     if (days > 0) return `${days}d ${hours % 24}h left`;
     if (hours > 0) return `${hours}h ${mins % 60}m left`;
     return `${Math.max(1, mins)}m left`;
+  }
+
+  /** Address history — this browser's own record of addresses it has
+   *  generated, purely in localStorage. Never sent anywhere, and
+   *  intentionally different from temp-mail.io's version of this
+   *  feature (theirs is server-tracked); this one can't be, since
+   *  Mailzy has no backend at all. Only the address text + a
+   *  timestamp are kept — never a token/password, so a stale entry
+   *  here can't be used to read mail, only to copy the string back. */
+  function loadAddressHistory() {
+    try {
+      const raw = localStorage.getItem(HISTORY_KEY);
+      const list = raw ? JSON.parse(raw) : [];
+      return Array.isArray(list) ? list : [];
+    } catch {
+      return [];
+    }
+  }
+
+  function recordAddressHistory(address) {
+    try {
+      const list = loadAddressHistory().filter((e) => e.address !== address);
+      list.unshift({ address, at: Date.now() });
+      localStorage.setItem(HISTORY_KEY, JSON.stringify(list.slice(0, HISTORY_MAX)));
+    } catch {
+      // Private browsing / quota exceeded — history just won't persist.
+    }
+  }
+
+  function renderHistoryList() {
+    if (!els.historyList) return;
+    const list = loadAddressHistory();
+    els.historyList.innerHTML = '';
+    if (list.length === 0) {
+      const li = document.createElement('li');
+      li.className = 'history-empty';
+      li.textContent = 'No addresses yet.';
+      els.historyList.appendChild(li);
+      return;
+    }
+    list.forEach((entry) => {
+      const li = document.createElement('li');
+      li.className = 'history-item';
+
+      const text = document.createElement('span');
+      text.className = 'history-item__address';
+      text.textContent = entry.address;
+
+      const time = document.createElement('span');
+      time.className = 'history-item__time';
+      time.textContent = formatRelativeTime(new Date(entry.at).toISOString());
+
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'btn btn--outline btn--pill history-item__copy';
+      btn.textContent = 'Copy';
+      btn.addEventListener('click', async () => {
+        try {
+          await navigator.clipboard.writeText(entry.address);
+          btn.textContent = 'Copied';
+          setTimeout(() => {
+            btn.textContent = 'Copy';
+          }, 1200);
+        } catch {
+          // Clipboard denied — the address text is still selectable.
+        }
+      });
+
+      li.appendChild(text);
+      li.appendChild(time);
+      li.appendChild(btn);
+      els.historyList.appendChild(li);
+    });
+  }
+
+  function openHistoryModal() {
+    renderHistoryList();
+    lastFocusedEl = document.activeElement;
+    els.historyOverlay.hidden = false;
+    els.closeHistoryBtn.focus();
+    document.addEventListener('keydown', onHistoryOverlayKeydown);
+  }
+
+  function closeHistoryModal() {
+    els.historyOverlay.hidden = true;
+    document.removeEventListener('keydown', onHistoryOverlayKeydown);
+    if (lastFocusedEl && typeof lastFocusedEl.focus === 'function') {
+      lastFocusedEl.focus();
+    }
+  }
+
+  function onHistoryOverlayKeydown(e) {
+    if (e.key === 'Escape') closeHistoryModal();
+  }
+
+  function clearAddressHistory() {
+    try {
+      localStorage.removeItem(HISTORY_KEY);
+    } catch {
+      // Nothing to do if storage itself is unavailable.
+    }
+    renderHistoryList();
+  }
+
+  /** Saved messages — a snapshot (subject/sender/body text only, no
+   *  attachments) kept in localStorage so a message survives even
+   *  after its mailbox expires or "New Address" replaces it. Never
+   *  fetched from the network; the "Saved" tab reads only from here. */
+  function loadSavedMessages() {
+    try {
+      const raw = localStorage.getItem(SAVED_KEY);
+      const list = raw ? JSON.parse(raw) : [];
+      return Array.isArray(list) ? list : [];
+    } catch {
+      return [];
+    }
+  }
+
+  function persistSavedMessages(list) {
+    try {
+      localStorage.setItem(SAVED_KEY, JSON.stringify(list.slice(0, SAVED_MAX)));
+    } catch {
+      // Private browsing / quota exceeded — save just won't persist.
+    }
+  }
+
+  function isMessageSaved(id) {
+    return loadSavedMessages().some((m) => m.id === id);
+  }
+
+  function saveCurrentMessage() {
+    if (!currentFullMessage || !currentMessageId) return;
+    const list = loadSavedMessages().filter((m) => m.id !== currentMessageId);
+    const senderLabel =
+      (currentFullMessage.from && (currentFullMessage.from.name || currentFullMessage.from.address)) || 'Unknown sender';
+    list.unshift({
+      id: currentMessageId,
+      from: senderLabel,
+      subject: currentFullMessage.subject || '(no subject)',
+      body: els.messageBody.textContent,
+      savedAt: Date.now(),
+    });
+    persistSavedMessages(list);
+  }
+
+  function unsaveMessage(id) {
+    persistSavedMessages(loadSavedMessages().filter((m) => m.id !== id));
+  }
+
+  function updateTabButtonsUI() {
+    if (!els.tabMessagesBtn || !els.tabSavedBtn) return;
+    els.tabMessagesBtn.classList.toggle('is-active', activeTab === 'messages');
+    els.tabSavedBtn.classList.toggle('is-active', activeTab === 'saved');
+  }
+
+  function updateSaveButtonUI() {
+    if (!els.saveMessageBtn) return;
+    if (currentMessageSource === 'saved') {
+      els.saveMessageBtn.textContent = 'Remove from Saved';
+    } else {
+      els.saveMessageBtn.textContent = isMessageSaved(currentMessageId) ? 'Saved ✓' : 'Save';
+    }
+  }
+
+  function toggleSaveCurrentMessage() {
+    if (!currentMessageId) return;
+    if (currentMessageSource === 'saved') {
+      unsaveMessage(currentMessageId);
+      closeMessage();
+      if (activeTab === 'saved') renderMessageList();
+      showToast('Removed from Saved', 'refresh');
+      return;
+    }
+    if (isMessageSaved(currentMessageId)) return;
+    saveCurrentMessage();
+    updateSaveButtonUI();
+    showToast('Message saved', 'check');
   }
 
   const SVG_NS = 'http://www.w3.org/2000/svg';
@@ -479,18 +753,35 @@
     );
   }
 
+  /** Normalizes a saved-message record into the same shape the live
+   *  message list already renders, so renderMessageList() below
+   *  doesn't need a second rendering path for the Saved tab. */
+  function savedAsListItem(m) {
+    return {
+      id: m.id,
+      from: { name: '', address: m.from },
+      subject: m.subject,
+      intro: m.body ? m.body.slice(0, 120) : '',
+      createdAt: new Date(m.savedAt).toISOString(),
+      seen: true,
+    };
+  }
+
   function renderMessageList(freshIds) {
     if (!session) return;
-    const allMessages = session.messages;
+    const isSavedTab = activeTab === 'saved';
+    const allMessages = isSavedTab ? loadSavedMessages().map(savedAsListItem) : session.messages;
     const term = currentSearchTerm();
     const messages = allMessages.filter((m) => matchesSearch(m, term));
 
     els.messageList.innerHTML = '';
 
-    const unreadCount = allMessages.filter((m) => m.seen === false).length;
-    if (els.sidebarUnreadCount) els.sidebarUnreadCount.textContent = String(unreadCount);
+    if (!isSavedTab) {
+      const unreadCount = allMessages.filter((m) => m.seen === false).length;
+      if (els.sidebarUnreadCount) els.sidebarUnreadCount.textContent = String(unreadCount);
+    }
 
-    const hasMore = typeof session.totalItems === 'number' && allMessages.length < session.totalItems;
+    const hasMore = !isSavedTab && typeof session.totalItems === 'number' && allMessages.length < session.totalItems;
     els.loadMoreBtn.hidden = !hasMore || Boolean(term);
 
     if (messages.length === 0) {
@@ -507,6 +798,9 @@
       if (term) {
         title.textContent = 'No matching emails';
         sub.textContent = `Nothing in this inbox matches "${term}".`;
+      } else if (isSavedTab) {
+        title.textContent = 'No saved messages';
+        sub.textContent = 'Save a message from its detail view to keep it here.';
       } else {
         title.textContent = 'No emails yet';
         sub.textContent = 'Your inbox is empty. Emails will appear here once received.';
@@ -563,7 +857,7 @@
         btn.appendChild(main);
         btn.appendChild(time);
         btn.appendChild(chevron);
-        btn.addEventListener('click', () => openMessage(m.id));
+        btn.addEventListener('click', () => (isSavedTab ? openSavedMessage(m.id) : openMessage(m.id)));
 
         li.appendChild(btn);
         els.messageList.appendChild(li);
@@ -599,12 +893,41 @@
       els.messageBody.textContent = bodyText;
       renderAttachments(full.attachments);
 
+      currentMessageId = id;
+      currentMessageSource = 'live';
+      currentFullMessage = full;
+      updateSaveButtonUI();
+
       els.messageOverlay.hidden = false;
       els.closeMessageBtn.focus();
       document.addEventListener('keydown', onOverlayKeydown);
     } catch (err) {
       els.inboxStatus.textContent = 'Unable to open that message. Please try again.';
     }
+  }
+
+  /** Opens a message from the Saved tab — reads only from
+   *  localStorage, never the network, since the mailbox that
+   *  originally delivered it may no longer exist. No attachments
+   *  either — those were never part of what got saved. */
+  function openSavedMessage(id) {
+    const entry = loadSavedMessages().find((m) => m.id === id);
+    if (!entry) return;
+    lastFocusedEl = document.activeElement;
+
+    els.messageFrom.textContent = entry.from;
+    els.messageSubject.textContent = entry.subject;
+    els.messageBody.textContent = entry.body;
+    renderAttachments(null);
+
+    currentMessageId = id;
+    currentMessageSource = 'saved';
+    currentFullMessage = null;
+    updateSaveButtonUI();
+
+    els.messageOverlay.hidden = false;
+    els.closeMessageBtn.focus();
+    document.addEventListener('keydown', onOverlayKeydown);
   }
 
   function formatBytes(bytes) {
@@ -719,6 +1042,9 @@
   function closeMessage() {
     els.messageOverlay.hidden = true;
     document.removeEventListener('keydown', onOverlayKeydown);
+    currentMessageId = null;
+    currentMessageSource = null;
+    currentFullMessage = null;
     if (lastFocusedEl && typeof lastFocusedEl.focus === 'function') {
       lastFocusedEl.focus();
     }
@@ -1062,6 +1388,31 @@
     });
   }
   if (els.notifyToggleBtn) els.notifyToggleBtn.addEventListener('click', toggleNotifications);
+  if (els.historyBtn) els.historyBtn.addEventListener('click', openHistoryModal);
+  if (els.closeHistoryBtn) els.closeHistoryBtn.addEventListener('click', closeHistoryModal);
+  if (els.clearHistoryBtn) els.clearHistoryBtn.addEventListener('click', clearAddressHistory);
+  if (els.historyOverlay) {
+    els.historyOverlay.addEventListener('click', (e) => {
+      if (e.target === els.historyOverlay) closeHistoryModal();
+    });
+  }
+  if (els.tabMessagesBtn) {
+    els.tabMessagesBtn.addEventListener('click', () => {
+      if (activeTab === 'messages') return;
+      activeTab = 'messages';
+      updateTabButtonsUI();
+      renderMessageList();
+    });
+  }
+  if (els.tabSavedBtn) {
+    els.tabSavedBtn.addEventListener('click', () => {
+      if (activeTab === 'saved') return;
+      activeTab = 'saved';
+      updateTabButtonsUI();
+      renderMessageList();
+    });
+  }
+  if (els.saveMessageBtn) els.saveMessageBtn.addEventListener('click', toggleSaveCurrentMessage);
   if (els.customizeAddressBtn) {
     els.customizeAddressBtn.addEventListener('click', () => {
       if (els.customizeForm.hidden) openCustomizeForm();
@@ -1074,7 +1425,8 @@
       e.preventDefault();
       const val = els.customLocalPartInput.value.trim();
       if (!val) return;
-      submitCustomAddress(val);
+      const domain = els.customDomainSelect ? els.customDomainSelect.value : '';
+      submitCustomAddress(val, domain);
     });
   }
   document.addEventListener('visibilitychange', onVisibilityChange);

@@ -54,7 +54,7 @@
     rel="stylesheet"
   />
 
-  <link rel="stylesheet" href="css/styles.css?v=4" />
+  <link rel="stylesheet" href="css/styles.css?v=5" />
 
   <!-- Set the theme before first paint so there's no flash of the wrong
        mode. Theme preference is UI-only and unrelated to the mailbox
@@ -202,39 +202,40 @@
             <input type="text" id="addressField" class="address-field" readonly spellcheck="false" />
           </div>
 
-          <div class="mail-actions mail-actions--primary">
-            <button type="button" class="btn btn--outline btn--pill" id="qrBtn">
-              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1" /><rect x="14" y="3" width="7" height="7" rx="1" /><rect x="3" y="14" width="7" height="7" rx="1" /><path d="M14 14h3v3M14 21h3M21 14v3M21 21v.01" /></svg>
-              QR Code
+          <div class="mail-action-links">
+            <button type="button" class="mail-action-link" id="copyBtn">
+              <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="9" width="13" height="13" rx="2" /><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" /></svg>
+              <span id="copyBtnLabel">copy</span>
             </button>
-            <button type="button" class="btn btn--primary btn--pill" id="copyBtn">
-              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="9" width="13" height="13" rx="2" /><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" /></svg>
-              <span id="copyBtnLabel">Copy</span>
+            <button type="button" class="mail-action-link" id="newAddressBtn">
+              <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 3h5v5" /><path d="M4 20 21 3" /><path d="M21 16v5h-5" /><path d="M15 15l6 6" /><path d="M4 4l5 5" /></svg>
+              random
             </button>
-          </div>
-
-          <div class="mail-actions mail-actions--secondary">
-            <button type="button" class="btn btn--outline btn--pill" id="refreshBtn">
-              <svg class="icon-refresh" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a9 9 0 1 1-2.64-6.36" /><path d="M21 3v6h-6" /></svg>
-              Refresh
+            <button type="button" class="mail-action-link" id="customizeAddressBtn" aria-expanded="false" aria-controls="customizeForm">
+              <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5z" /></svg>
+              change
             </button>
-            <button type="button" class="btn btn--outline btn--pill" id="newAddressBtn">
-              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v14M5 12h14" /></svg>
-              New Address
+            <button type="button" class="mail-action-link" id="qrBtn">
+              <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1" /><rect x="14" y="3" width="7" height="7" rx="1" /><rect x="3" y="14" width="7" height="7" rx="1" /><path d="M14 14h3v3M14 21h3M21 14v3M21 21v.01" /></svg>
+              QR code
             </button>
-            <button type="button" class="btn btn--outline btn--pill" id="customizeAddressBtn" aria-expanded="false" aria-controls="customizeForm">
-              <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5z" /></svg>
-              Choose Name
+            <button type="button" class="mail-action-link" id="notifyToggleBtn" aria-pressed="false">
+              <svg class="icon-bell" viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 8a6 6 0 1 1 12 0c0 4 2 5 2 6H4c0-1 2-2 2-6" /><path d="M10 20a2 2 0 0 0 4 0" /></svg>
+              notify
             </button>
-            <button type="button" class="btn btn--outline btn--pill" id="notifyToggleBtn" aria-pressed="false">
-              <svg class="icon-bell" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 8a6 6 0 1 1 12 0c0 4 2 5 2 6H4c0-1 2-2 2-6" /><path d="M10 20a2 2 0 0 0 4 0" /></svg>
-              Notify Me
+            <button type="button" class="mail-action-link" id="historyBtn">
+              <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 8v4l3 3" /><circle cx="12" cy="12" r="9" /></svg>
+              history
             </button>
           </div>
 
           <form class="customize-form" id="customizeForm" hidden>
             <label class="sr-only" for="customLocalPartInput">Custom address name</label>
             <input type="text" id="customLocalPartInput" placeholder="yourname" autocomplete="off" spellcheck="false" maxlength="40" />
+            <label class="sr-only" for="customDomainSelect">Domain</label>
+            <select id="customDomainSelect" hidden>
+              <option value="">Random domain</option>
+            </select>
             <button type="submit" class="btn btn--primary btn--pill">
               <span id="customizeSubmitLabel">Use this name</span>
             </button>
@@ -263,6 +264,14 @@
                 <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7" /><path d="m21 21-4.3-4.3" /></svg>
                 <input type="search" id="messageSearchInput" placeholder="Search emails…" autocomplete="off" />
               </label>
+              <button type="button" class="btn btn--icon inbox-card__refresh" id="refreshBtn" aria-label="Refresh inbox">
+                <svg class="icon-refresh" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a9 9 0 1 1-2.64-6.36" /><path d="M21 3v6h-6" /></svg>
+              </button>
+            </div>
+
+            <div class="inbox-tabs">
+              <button type="button" class="inbox-tabs__item is-active" id="tabMessagesBtn">Messages</button>
+              <button type="button" class="inbox-tabs__item" id="tabSavedBtn">Saved</button>
             </div>
 
             <!-- Screen-reader-only status announcer — the visible badge +
@@ -354,19 +363,23 @@
 
         <h2>How Mailzy is built</h2>
         <p>
-          There's no account system behind Mailzy and no database of past addresses. Each inbox is provisioned
-          against a temporary-mail API on the fly, held only in the browser tab's memory, and never written to
-          local storage &mdash; refreshing the page or closing the tab lets it go. If the primary mail provider
-          is briefly unreachable, Mailzy quietly retries against a second one rather than showing an error, so
-          a single provider's downtime doesn't cost you a working inbox. Message content is always rendered as
-          plain text, never as raw HTML, which closes off the usual way a malicious email tries to run code in
-          your browser.
+          There's no account system behind Mailzy and no server-side database of past addresses. Each inbox is
+          provisioned against a temporary-mail API on the fly, and closing the tab lets that mailbox go &mdash;
+          refreshing starts a fresh one. The one exception is what you explicitly ask to keep: this device
+          remembers the addresses you've generated and any messages you've chosen to save, but only in this
+          browser's own local storage, never sent to a server. If the primary mail provider is briefly
+          unreachable, Mailzy quietly retries against a second one rather than showing an error, so a single
+          provider's downtime doesn't cost you a working inbox. Message content is always rendered as plain
+          text, never as raw HTML, which closes off the usual way a malicious email tries to run code in your
+          browser.
         </p>
         <p>
-          Beyond the basic inbox, you can pick your own name for the address instead of taking the randomly
-          generated one, pull up a QR code to carry the address to another device without retyping it, download
-          any file attachments a message includes, and turn on browser notifications so a reply doesn't sit
-          unnoticed in a background tab.
+          Beyond the basic inbox, you can pick your own name for the address (and, when it's available, which
+          domain it lands on) instead of taking the randomly generated one, pull up a QR code to carry the
+          address to another device without retyping it, download any file attachments a message includes,
+          save individual messages so they survive past the mailbox's own expiry, look back at addresses you've
+          generated on this device, and turn on browser notifications so a reply doesn't sit unnoticed in a
+          background tab.
         </p>
 
         <h2>What it isn't for</h2>
@@ -398,6 +411,21 @@
       <h2 class="message-detail__subject" id="messageSubject"></h2>
       <pre class="message-detail__body" id="messageBody"></pre>
       <div class="message-detail__attachments" id="messageAttachments"></div>
+      <button type="button" class="btn btn--outline btn--pill message-detail__save" id="saveMessageBtn">Save</button>
+    </div>
+  </div>
+
+  <!-- Address history — this browser's own record of addresses it
+       has generated, kept in localStorage only (see js/app.js). -->
+  <div class="history-overlay" id="historyOverlay" hidden>
+    <div class="history-modal" role="dialog" aria-modal="true" aria-labelledby="historyModalTitle">
+      <button type="button" class="btn btn--icon history-modal__close" id="closeHistoryBtn" aria-label="Close address history">
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12" /></svg>
+      </button>
+      <h2 id="historyModalTitle" class="history-modal__title">Address history</h2>
+      <p class="history-modal__hint">Stored only in this browser &mdash; never sent anywhere.</p>
+      <ul class="history-list" id="historyList"></ul>
+      <button type="button" class="btn btn--outline btn--pill history-modal__clear" id="clearHistoryBtn">Clear history</button>
     </div>
   </div>
 
@@ -426,10 +454,10 @@
   <div class="toast-region" id="toastRegion" aria-live="polite" aria-atomic="false"></div>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js" defer></script>
-  <script src="js/shell.js?v=4"></script>
-  <script src="js/mailtm.js?v=4"></script>
-  <script src="js/guerrillamail.js?v=4"></script>
-  <script src="js/reveal.js?v=4"></script>
-  <script src="js/app.js?v=4"></script>
+  <script src="js/shell.js?v=5"></script>
+  <script src="js/mailtm.js?v=5"></script>
+  <script src="js/guerrillamail.js?v=5"></script>
+  <script src="js/reveal.js?v=5"></script>
+  <script src="js/app.js?v=5"></script>
 </body>
 </html>

@@ -1,14 +1,15 @@
 /* =========================================================
    Mailzy — backup temp-mail client (api.guerrillamail.com)
-   Used ONLY as an automatic fallback when mail.gw (the
-   priority provider, see js/mailtm.js) is unreachable after
-   its own retries are exhausted. This is disclosed to the
-   user — app.js shows a visible banner and toast when this
-   provider is active, never a silent swap.
+   Used as an automatic fallback whenever mail.gw (the priority
+   provider, see js/mailtm.js) can't do what's being asked —
+   either its retries are exhausted for a random address, or it
+   specifically rejects/can't reach a chosen custom name. Not
+   disclosed with a banner; app.js's own comments explain why.
 
    API shape (confirmed working, open CORS — Access-Control-
    Allow-Origin: * on every endpoint used below):
      GET  ajax.php?f=get_email_address&lang=en   -> new inbox
+     GET  ajax.php?f=set_email_user&email_user=&sid_token=  -> rename to a custom local part
      GET  ajax.php?f=check_email&sid_token=&seq=  -> poll
      GET  ajax.php?f=fetch_email&sid_token=&email_id= -> full msg
      GET  ajax.php?f=forget_me&sid_token=&email_id=   -> best-effort delete
@@ -66,6 +67,22 @@
       sidToken: body.sid_token,
       address: body.email_addr,
       createdAt: Date.now(),
+    };
+  }
+
+  /** Renames the given inbox to a chosen local part — a genuine,
+   *  working endpoint (verified directly), not a documented-but-
+   *  unsupported one. Used as the custom-name fallback when mail.gw
+   *  itself can't be reached: the user still gets the exact name
+   *  they asked for, just on this provider's fixed domain instead. */
+  async function setEmailUser(sidToken, desiredLocalPart) {
+    const body = await call({ f: 'set_email_user', email_user: desiredLocalPart, lang: 'en', sid_token: sidToken });
+    if (!body || !body.email_addr) {
+      throw new GuerrillaMailError('The backup mail service could not use that name.');
+    }
+    return {
+      sidToken: body.sid_token || sidToken,
+      address: body.email_addr,
     };
   }
 
@@ -128,6 +145,7 @@
     GuerrillaMailError,
     RETENTION_MS,
     createAddress,
+    setEmailUser,
     listMessages,
     getMessage,
     forgetMe,

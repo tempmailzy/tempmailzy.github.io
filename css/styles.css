@@ -661,39 +661,45 @@ a {
 }
 
 /* =========================================================
-   Action button rows — primary (QR / Copy) directly under the
-   address, secondary (Refresh / New / Customize / Notify) as
-   an equal-weight grid below, mirroring the clean button-row
-   pattern common to temp-mail tools.
+   Minimal action-link row — small icon+text links rather than
+   heavy buttons, the understated pattern common to temp-mail
+   tools' address-action rows.
    ========================================================= */
-.mail-actions {
+.mail-action-links {
   display: flex;
-  gap: var(--space-2);
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--space-2) var(--space-4);
   margin-bottom: var(--space-4);
 }
 
-.mail-actions--primary {
-  justify-content: center;
+.mail-action-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: none;
+  border: none;
+  padding: var(--space-1) var(--space-2);
+  color: var(--text-soft);
+  font-family: var(--font-sans);
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  border-radius: var(--radius-sm);
+  transition: color 0.15s ease, background 0.15s ease;
 }
 
-.mail-actions--primary .btn {
-  flex: 0 1 200px;
+.mail-action-link svg {
+  flex: 0 0 auto;
 }
 
-.mail-actions--secondary {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
+.mail-action-link:hover {
+  color: var(--accent);
+  background: var(--bg-elevated-2);
 }
 
-.mail-actions--secondary .btn {
-  font-size: 0.82rem;
-  padding: var(--space-2) var(--space-3);
-}
-
-@media (max-width: 620px) {
-  .mail-actions--secondary {
-    grid-template-columns: repeat(2, 1fr);
-  }
+#notifyToggleBtn.is-active {
+  color: var(--accent);
 }
 
 .customize-form {
@@ -719,7 +725,8 @@ a {
   }
 }
 
-.customize-form input {
+.customize-form input,
+.customize-form select {
   flex: 1 1 160px;
   min-width: 0;
   height: 40px;
@@ -730,6 +737,10 @@ a {
   color: var(--text);
   font-family: var(--font-mono);
   font-size: 0.86rem;
+}
+
+.customize-form select[hidden] {
+  display: none;
 }
 
 .customize-form input::placeholder {
@@ -824,12 +835,6 @@ a {
 
 .icon-refresh.is-spinning {
   animation: icon-spin 0.6s linear;
-}
-
-#notifyToggleBtn.is-active {
-  background: var(--accent-soft);
-  border-color: var(--border-strong);
-  color: var(--accent);
 }
 
 @keyframes bell-ring {
@@ -1002,6 +1007,52 @@ a {
 .inbox-card__header .inbox-search {
   flex: 1 1 220px;
   max-width: 320px;
+}
+
+.inbox-card__refresh {
+  flex: 0 0 auto;
+  background: rgba(255, 255, 255, 0.16);
+  border: none;
+  color: var(--accent-on);
+  width: 36px;
+  height: 36px;
+  min-height: 36px;
+  min-width: 36px;
+}
+
+.inbox-card__refresh:hover {
+  background: rgba(255, 255, 255, 0.28);
+}
+
+/* =========================================================
+   Inbox tabs — Messages / Saved
+   ========================================================= */
+.inbox-tabs {
+  display: flex;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-4) 0;
+}
+
+.inbox-tabs__item {
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  padding: var(--space-2) var(--space-1);
+  color: var(--text-faint);
+  font-family: var(--font-sans);
+  font-size: 0.84rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: color 0.15s ease, border-color 0.15s ease;
+}
+
+.inbox-tabs__item:hover {
+  color: var(--text-soft);
+}
+
+.inbox-tabs__item.is-active {
+  color: var(--accent);
+  border-bottom-color: var(--accent);
 }
 
 .inbox-card .message-list-wrap,
@@ -1732,6 +1783,129 @@ a {
   }
 }
 
+.message-detail__save {
+  margin-top: var(--space-4);
+  width: 100%;
+}
+
+/* =========================================================
+   Address history overlay — same modal pattern as the QR
+   overlay above, listing what's in localStorage (see
+   js/app.js loadAddressHistory()).
+   ========================================================= */
+.history-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-5) var(--space-3);
+  z-index: 50;
+}
+
+:root[data-theme='light'] .history-overlay {
+  background: rgba(20, 17, 10, 0.4);
+}
+
+.history-overlay[hidden] {
+  display: none;
+}
+
+.history-overlay:not([hidden]) {
+  animation: overlay-fade 0.2s ease both;
+}
+
+.history-modal {
+  position: relative;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius);
+  max-width: 420px;
+  width: 100%;
+  max-height: 80vh;
+  display: flex;
+  flex-direction: column;
+  padding: var(--space-6) var(--space-5) var(--space-5);
+  box-shadow: var(--shadow-card-lg);
+  animation: modal-in 0.22s cubic-bezier(0.2, 0.9, 0.3, 1.1) both;
+}
+
+.history-modal__close {
+  position: absolute;
+  top: var(--space-3);
+  right: var(--space-3);
+}
+
+.history-modal__title {
+  font-size: 1rem;
+  margin: 0 0 var(--space-1);
+  color: var(--text);
+}
+
+.history-modal__hint {
+  margin: 0 0 var(--space-4);
+  font-size: 0.76rem;
+  color: var(--text-faint);
+}
+
+.history-list {
+  list-style: none;
+  margin: 0 0 var(--space-4);
+  padding: 0;
+  overflow-y: auto;
+  flex: 1 1 auto;
+}
+
+.history-item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.history-item__address {
+  flex: 1 1 auto;
+  min-width: 0;
+  font-family: var(--font-mono);
+  font-size: 0.82rem;
+  color: var(--text);
+  overflow-wrap: anywhere;
+}
+
+.history-item__time {
+  flex: 0 0 auto;
+  font-size: 0.72rem;
+  color: var(--text-faint);
+  white-space: nowrap;
+}
+
+.history-item__copy {
+  flex: 0 0 auto;
+  font-size: 0.76rem;
+  padding: var(--space-1) var(--space-3);
+  min-height: 30px;
+}
+
+.history-empty {
+  padding: var(--space-5) 0;
+  text-align: center;
+  color: var(--text-faint);
+  font-size: 0.86rem;
+}
+
+.history-modal__clear {
+  width: 100%;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .history-overlay:not([hidden]) {
+    animation: none;
+  }
+}
+
 /* =========================================================
    Footer
    ========================================================= */
@@ -1961,10 +2135,6 @@ a {
 }
 
 @media (max-width: 400px) {
-  .mail-actions--secondary {
-    grid-template-columns: 1fr 1fr;
-  }
-
   .inbox-card__header .inbox-search {
     flex: 1 1 100%;
     max-width: none;
