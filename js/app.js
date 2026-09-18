@@ -46,6 +46,8 @@
     qrCodeContainer: document.getElementById('qrCodeContainer'),
     qrAddressText: document.getElementById('qrAddressText'),
     closeQrBtn: document.getElementById('closeQrBtn'),
+    copyQrLinkBtn: document.getElementById('copyQrLinkBtn'),
+    copyQrLinkLabel: document.getElementById('copyQrLinkLabel'),
     messageAttachments: document.getElementById('messageAttachments'),
     notifyToggleBtn: document.getElementById('notifyToggleBtn'),
   };
@@ -157,6 +159,57 @@
         GuerrillaMail.forgetMe(old.sidToken, old.address);
       }
     }
+  }
+
+  /** Reads a continuation link's fragment (see buildContinuationLink()
+   *  above) — never touches the server, since a URL fragment is
+   *  purely client-side. Returns null for an ordinary page load with
+   *  no fragment, or an unrecognized one. */
+  function parseContinuationParams() {
+    if (!location.hash || location.hash.length < 2) return null;
+    const params = new URLSearchParams(location.hash.slice(1));
+    const provider = params.get('provider');
+    if (provider !== 'mailgw' && provider !== 'guerrilla') return null;
+    return {
+      provider,
+      addr: params.get('addr'),
+      token: params.get('token'),
+      acct: params.get('acct'),
+      created: params.get('created'),
+      expires: params.get('expires'),
+      sid: params.get('sid'),
+    };
+  }
+
+  /** Validates the carried credential against the real API (a stale
+   *  or already-deleted mailbox throws here) before committing to it
+   *  as the active session — never just trusts the URL blindly. */
+  async function tryResumeSession(params) {
+    if (params.provider === 'mailgw' && params.token && params.addr) {
+      await MailTm.listMessages(params.token, 1);
+      return {
+        provider: 'mailgw',
+        token: params.token,
+        account: { id: params.acct || null, createdAt: params.created || null, retentionAt: params.expires || null },
+        address: params.addr,
+        messages: [],
+        loadedPages: 0,
+        totalItems: null,
+      };
+    }
+    if (params.provider === 'guerrilla' && params.sid && params.addr) {
+      await GuerrillaMail.listMessages(params.sid);
+      return {
+        provider: 'guerrilla',
+        sidToken: params.sid,
+        address: params.addr,
+        createdAt: params.created ? Number(params.created) : Date.now(),
+        messages: [],
+        loadedPages: 0,
+        totalItems: null,
+      };
+    }
+    return null;
   }
 
   function openCustomizeForm() {
@@ -675,23 +728,48 @@
     if (e.key === 'Escape') closeMessage();
   }
 
-  /** Renders a QR code for the current address entirely client-side
-   *  via the bundled qrcodejs library — the address is never sent
-   *  anywhere to produce this image. Fixed black-on-white regardless
-   *  of theme, since that's what keeps it reliably scannable. */
+  /** Builds a link back to this same page carrying enough of the
+   *  current session for boot() (see below) to reattach to this
+   *  exact inbox on whatever device opens it — not a fresh random
+   *  one. Lives in the URL fragment, which is never sent to any
+   *  server, so mail.gw's bearer token never appears in a request
+   *  log anywhere. Anyone who opens it can read this inbox, same as
+   *  anyone standing at the same shared mailbox this site already
+   *  says it is — that's disclosed right in the QR modal. */
+  function buildContinuationLink() {
+    const params = new URLSearchParams();
+    if (session.provider === 'mailgw') {
+      params.set('provider', 'mailgw');
+      params.set('addr', session.address);
+      params.set('token', session.token);
+      if (session.account && session.account.id) params.set('acct', session.account.id);
+      if (session.account && session.account.createdAt) params.set('created', session.account.createdAt);
+      if (session.account && session.account.retentionAt) params.set('expires', session.account.retentionAt);
+    } else {
+      params.set('provider', 'guerrilla');
+      params.set('addr', session.address);
+      params.set('sid', session.sidToken);
+      params.set('created', String(session.createdAt));
+    }
+    return `${location.origin}${location.pathname}#${params.toString()}`;
+  }
+
+  /** Renders a QR code for a link that reattaches to this inbox on
+   *  whatever device scans it (see buildContinuationLink()) — never
+   *  sent to a server to produce this image, generated purely
+   *  client-side via the bundled qrcodejs library. Fixed
+   *  black-on-white regardless of theme, since that's what keeps it
+   *  reliably scannable. */
   function openQrModal() {
     if (!session) return;
     if (typeof QRCode === 'undefined') {
       showToast('The QR code library failed to load. Please try again.', 'refresh');
       return;
     }
+    const link = buildContinuationLink();
     els.qrCodeContainer.innerHTML = '';
-    // Encoded as mailto:, not a bare string — most phone camera/QR
-    // scanners only recognize a plain string as a search query. The
-    // mailto: scheme is what makes them offer to open a mail app
-    // with this address pre-filled instead.
     new QRCode(els.qrCodeContainer, {
-      text: `mailto:${session.address}`,
+      text: link,
       width: 200,
       height: 200,
       colorDark: '#000000',
@@ -699,10 +777,27 @@
       correctLevel: QRCode.CorrectLevel.M,
     });
     els.qrAddressText.textContent = session.address;
+    els.copyQrLinkBtn.dataset.link = link;
+    els.copyQrLinkLabel.textContent = 'Copy link instead';
     lastFocusedEl = document.activeElement;
     els.qrOverlay.hidden = false;
     els.closeQrBtn.focus();
     document.addEventListener('keydown', onQrOverlayKeydown);
+  }
+
+  async function copyQrLink() {
+    const link = els.copyQrLinkBtn.dataset.link;
+    if (!link) return;
+    try {
+      await navigator.clipboard.writeText(link);
+      els.copyQrLinkLabel.textContent = 'Copied';
+      setTimeout(() => {
+        els.copyQrLinkLabel.textContent = 'Copy link instead';
+      }, 1500);
+    } catch {
+      // Clipboard access can be denied — the QR code and visible
+      // address text are still right there as a fallback.
+    }
   }
 
   function closeQrModal() {
@@ -960,6 +1055,7 @@
   });
   if (els.qrBtn) els.qrBtn.addEventListener('click', openQrModal);
   if (els.closeQrBtn) els.closeQrBtn.addEventListener('click', closeQrModal);
+  if (els.copyQrLinkBtn) els.copyQrLinkBtn.addEventListener('click', copyQrLink);
   if (els.qrOverlay) {
     els.qrOverlay.addEventListener('click', (e) => {
       if (e.target === els.qrOverlay) closeQrModal();
@@ -987,5 +1083,34 @@
     if (btn && !btn.disabled) addClickRipple(btn, e.clientX, e.clientY);
   });
 
-  init();
+  /** Entry point. If the URL carries a continuation link from another
+   *  device's QR/copy-link (see buildContinuationLink()), tries that
+   *  first — the fragment is stripped immediately either way, before
+   *  any network call, so it never lingers in history and a refresh
+   *  afterward behaves like an ordinary fresh visit. Falls back to a
+   *  brand new address on anything unrecognized or no longer valid. */
+  async function boot() {
+    const resumeParams = parseContinuationParams();
+    if (!resumeParams) {
+      init();
+      return;
+    }
+    history.replaceState(null, document.title, location.pathname + location.search);
+    showLoading();
+    try {
+      const resumed = await tryResumeSession(resumeParams);
+      if (resumed) {
+        activateSession(resumed, null);
+        showTicket();
+        showToast('Reconnected to your inbox', 'refresh');
+        return;
+      }
+    } catch (err) {
+      // Falls through to a fresh address below.
+    }
+    await init();
+    showToast('That inbox link had expired, so a new address was created', 'refresh');
+  }
+
+  boot();
 })();

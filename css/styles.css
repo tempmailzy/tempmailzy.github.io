@@ -1809,11 +1809,24 @@ a {
 }
 
 .qr-modal__address {
-  margin: 0;
+  margin: 0 0 var(--space-3);
   font-family: var(--font-mono);
   font-size: 0.78rem;
   color: var(--text-soft);
   overflow-wrap: anywhere;
+}
+
+.qr-modal__copy-link {
+  width: 100%;
+  font-size: 0.82rem;
+  margin-bottom: var(--space-3);
+}
+
+.qr-modal__warning {
+  margin: 0;
+  font-size: 0.74rem;
+  line-height: 1.5;
+  color: var(--warn);
 }
 
 @media (prefers-reduced-motion: reduce) {
