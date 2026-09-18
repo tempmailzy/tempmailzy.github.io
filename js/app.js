@@ -686,8 +686,12 @@
       return;
     }
     els.qrCodeContainer.innerHTML = '';
+    // Encoded as mailto:, not a bare string — most phone camera/QR
+    // scanners only recognize a plain string as a search query. The
+    // mailto: scheme is what makes them offer to open a mail app
+    // with this address pre-filled instead.
     new QRCode(els.qrCodeContainer, {
-      text: session.address,
+      text: `mailto:${session.address}`,
       width: 200,
       height: 200,
       colorDark: '#000000',
