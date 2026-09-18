@@ -483,112 +483,43 @@ a {
 }
 
 /* =========================================================
-   Hero CTA card — the marketing header, always visible
+   Mail hero — slim, persistent heading above the app card.
+   Clean/centered layout inspired by other temp-mail tools'
+   single-focus address-first structure (own colors, own
+   copy, own markup — not a copy of any specific site).
    ========================================================= */
-.hero-cta {
-  position: relative;
-  overflow: hidden;
-  display: flex;
-  align-items: center;
-  gap: var(--space-4);
-  background: var(--bg-elevated);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  padding: var(--space-5) var(--space-5);
-  margin-bottom: var(--space-4);
+.mail-hero {
+  text-align: center;
+  padding: var(--space-6) var(--space-4) var(--space-4);
 }
 
-/* Subtle diagonal texture, confined to this card only. */
-.hero-cta::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  background-image: repeating-linear-gradient(
-    115deg,
-    var(--accent-soft) 0px,
-    var(--accent-soft) 2px,
-    transparent 2px,
-    transparent 26px
-  );
-  opacity: 0.5;
-  mask-image: linear-gradient(100deg, black, transparent 75%);
-  -webkit-mask-image: linear-gradient(100deg, black, transparent 75%);
-}
-
-.hero-cta__icon {
-  position: relative;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 56px;
-  height: 56px;
-  border-radius: var(--radius-sm);
-  background: var(--accent-soft);
-  color: var(--accent);
-  flex: 0 0 auto;
-}
-
-.hero-cta__body {
-  position: relative;
-  flex: 1 1 auto;
-  min-width: 0;
-}
-
-.hero-cta__eyebrow {
+.mail-hero__eyebrow {
   display: block;
-  font-size: 0.72rem;
+  font-size: 0.76rem;
   font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
   color: var(--accent);
-  margin-bottom: var(--space-1);
+  margin-bottom: var(--space-2);
 }
 
-.hero-cta__title {
-  font-size: clamp(1.2rem, 3.4vw, 1.55rem);
+.mail-hero__title {
+  font-size: clamp(1.5rem, 4.4vw, 2.1rem);
   font-weight: 800;
   letter-spacing: -0.01em;
-  margin: 0 0 var(--space-1);
+  margin: 0 0 var(--space-2);
   color: var(--text);
 }
 
-.hero-cta__title .accent {
+.mail-hero__title .accent {
   color: var(--accent);
 }
 
-.hero-cta__sub {
-  margin: 0;
-  font-size: 0.86rem;
+.mail-hero__sub {
+  margin: 0 auto;
+  max-width: 32em;
+  font-size: 0.92rem;
   color: var(--text-soft);
-}
-
-.hero-cta__action {
-  position: relative;
-  flex: 0 0 auto;
-  white-space: nowrap;
-  transition: background 0.15s ease, box-shadow 0.25s ease, transform 0.15s ease;
-}
-
-.hero-cta__action:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 0 0 3px var(--accent-soft), 0 10px 24px -8px var(--accent-soft);
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .hero-cta__action:hover {
-    transform: none;
-  }
-}
-
-@media (max-width: 640px) {
-  .hero-cta {
-    flex-wrap: wrap;
-  }
-
-  .hero-cta__action {
-    width: 100%;
-  }
 }
 
 /* =========================================================
@@ -697,50 +628,24 @@ a {
 }
 
 /* =========================================================
-   Address card
+   Address pill — the single focal point of the tool: one
+   big, centered, unmistakable readout of the current address.
    ========================================================= */
-.address-card {
+.address-pill {
   display: flex;
-  align-items: center;
-  gap: var(--space-3);
+  justify-content: center;
   background: var(--bg-elevated-2);
   border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
-  padding: var(--space-3) var(--space-3) var(--space-3) var(--space-4);
-  margin-bottom: var(--space-3);
-}
-
-.address-card__icon {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 38px;
-  height: 38px;
-  border-radius: 50%;
-  background: var(--accent-soft);
-  color: var(--accent);
-  flex: 0 0 auto;
-}
-
-.address-card__main {
-  flex: 1 1 auto;
-  min-width: 0;
-  display: flex;
-  flex-direction: column;
-}
-
-.address-card__label {
-  font-size: 0.72rem;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  color: var(--text-faint);
-  margin-bottom: 2px;
+  border-radius: var(--radius-pill);
+  padding: var(--space-4) var(--space-5);
+  margin-bottom: var(--space-4);
 }
 
 .address-field {
   font-family: var(--font-mono);
-  font-size: clamp(0.9rem, 3.6vw, 1.05rem);
-  font-weight: 600;
+  font-size: clamp(1rem, 4vw, 1.3rem);
+  font-weight: 700;
+  text-align: center;
   border: none;
   background: transparent;
   color: var(--text);
@@ -752,32 +657,43 @@ a {
   margin: 0 0 var(--space-4);
   font-size: 0.8rem;
   color: var(--text-faint);
+  text-align: center;
 }
 
 /* =========================================================
-   Custom address name
+   Action button rows — primary (QR / Copy) directly under the
+   address, secondary (Refresh / New / Customize / Notify) as
+   an equal-weight grid below, mirroring the clean button-row
+   pattern common to temp-mail tools.
    ========================================================= */
-.address-customize {
-  margin: 0 0 var(--space-4);
+.mail-actions {
+  display: flex;
+  gap: var(--space-2);
+  margin-bottom: var(--space-4);
 }
 
-.address-customize__toggle {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  background: none;
-  border: none;
-  padding: 0;
-  color: var(--text-soft);
-  font-family: var(--font-sans);
-  font-size: 0.8rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: color 0.15s ease;
+.mail-actions--primary {
+  justify-content: center;
 }
 
-.address-customize__toggle:hover {
-  color: var(--accent);
+.mail-actions--primary .btn {
+  flex: 0 1 200px;
+}
+
+.mail-actions--secondary {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+}
+
+.mail-actions--secondary .btn {
+  font-size: 0.82rem;
+  padding: var(--space-2) var(--space-3);
+}
+
+@media (max-width: 620px) {
+  .mail-actions--secondary {
+    grid-template-columns: repeat(2, 1fr);
+  }
 }
 
 .customize-form {
@@ -1054,68 +970,49 @@ a {
 }
 
 /* =========================================================
-   Inbox header — icon + title/subtitle, search, refresh
+   Inbox card — its own distinct card with a colored header
+   bar, separating "the address" from "the mail" the same way
+   other temp-mail tools visually split those two concerns.
    ========================================================= */
-.inbox-header {
+.inbox-card {
+  background: var(--bg-elevated-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+}
+
+.inbox-card__header {
   display: flex;
   align-items: center;
+  justify-content: space-between;
   gap: var(--space-3);
   flex-wrap: wrap;
-  margin-bottom: var(--space-4);
+  background: var(--accent);
+  padding: var(--space-3) var(--space-4);
 }
 
-.inbox-header__title {
-  display: flex;
-  align-items: center;
-  gap: var(--space-3);
-  flex: 1 1 260px;
-  min-width: 0;
+.inbox-card__label {
+  font-size: 0.82rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--accent-on);
 }
 
-.inbox-header__icon {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 40px;
-  height: 40px;
-  border-radius: var(--radius-sm);
-  background: var(--accent-soft);
-  color: var(--accent);
-  flex: 0 0 auto;
+.inbox-card__header .inbox-search {
+  flex: 1 1 220px;
+  max-width: 320px;
 }
 
-.inbox-header__title h2 {
-  font-size: 1rem;
-  margin: 0;
-  color: var(--text);
+.inbox-card .message-list-wrap,
+.inbox-card .load-more {
+  border: none;
+  border-radius: 0;
+  background: transparent;
 }
 
-.inbox-header__title p {
-  margin: 2px 0 0;
-  font-size: 0.78rem;
-  color: var(--text-faint);
-}
-
-.badge[hidden] {
-  display: none;
-}
-
-.badge {
-  display: inline-flex;
-  align-items: center;
-  background: var(--accent-soft);
-  color: var(--accent);
-  font-size: 0.72rem;
-  font-weight: 700;
-  padding: 3px var(--space-2);
-  border-radius: var(--radius-pill);
-}
-
-.inbox-header__actions {
-  display: flex;
-  align-items: center;
-  gap: var(--space-2);
-  flex: 1 1 240px;
+.inbox-card .load-more {
+  padding: var(--space-3) var(--space-4);
 }
 
 .inbox-search {
@@ -2064,16 +1961,13 @@ a {
 }
 
 @media (max-width: 400px) {
-  .address-card {
-    flex-wrap: wrap;
+  .mail-actions--secondary {
+    grid-template-columns: 1fr 1fr;
   }
 
-  .address-card .btn:not(.btn--round) {
-    width: 100%;
-  }
-
-  .inbox-header__actions {
-    width: 100%;
+  .inbox-card__header .inbox-search {
+    flex: 1 1 100%;
+    max-width: none;
   }
 
   .message-item {
