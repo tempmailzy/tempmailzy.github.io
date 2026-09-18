@@ -567,6 +567,18 @@ a {
   position: relative;
   flex: 0 0 auto;
   white-space: nowrap;
+  transition: background 0.15s ease, box-shadow 0.25s ease, transform 0.15s ease;
+}
+
+.hero-cta__action:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 0 0 3px var(--accent-soft), 0 10px 24px -8px var(--accent-soft);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-cta__action:hover {
+    transform: none;
+  }
 }
 
 @media (max-width: 640px) {
@@ -743,6 +755,92 @@ a {
 }
 
 /* =========================================================
+   Custom address name
+   ========================================================= */
+.address-customize {
+  margin: 0 0 var(--space-4);
+}
+
+.address-customize__toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: none;
+  border: none;
+  padding: 0;
+  color: var(--text-soft);
+  font-family: var(--font-sans);
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: color 0.15s ease;
+}
+
+.address-customize__toggle:hover {
+  color: var(--accent);
+}
+
+.customize-form {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin-top: var(--space-3);
+  animation: customize-open 0.2s ease both;
+}
+
+.customize-form[hidden] {
+  display: none;
+}
+
+@keyframes customize-open {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.customize-form input {
+  flex: 1 1 160px;
+  min-width: 0;
+  height: 40px;
+  padding: 0 var(--space-3);
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-strong);
+  background: var(--bg-elevated-2);
+  color: var(--text);
+  font-family: var(--font-mono);
+  font-size: 0.86rem;
+}
+
+.customize-form input::placeholder {
+  color: var(--text-faint);
+}
+
+.customize-form .btn {
+  min-height: 40px;
+}
+
+.customize-form__error {
+  margin: var(--space-2) 0 0;
+  font-size: 0.8rem;
+  color: var(--danger);
+}
+
+.customize-form__error[hidden] {
+  display: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .customize-form {
+    animation: none;
+  }
+}
+
+/* =========================================================
    Retention / expiry indicator
    ========================================================= */
 .expiry-row {
@@ -810,6 +908,40 @@ a {
 
 .icon-refresh.is-spinning {
   animation: icon-spin 0.6s linear;
+}
+
+#notifyToggleBtn.is-active {
+  background: var(--accent-soft);
+  border-color: var(--border-strong);
+  color: var(--accent);
+}
+
+@keyframes bell-ring {
+  0%, 100% {
+    transform: rotate(0deg);
+  }
+  20% {
+    transform: rotate(12deg);
+  }
+  40% {
+    transform: rotate(-10deg);
+  }
+  60% {
+    transform: rotate(6deg);
+  }
+  80% {
+    transform: rotate(-4deg);
+  }
+}
+
+#notifyToggleBtn.is-active .icon-bell {
+  animation: bell-ring 0.5s ease;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #notifyToggleBtn.is-active .icon-bell {
+    animation: none;
+  }
 }
 
 @keyframes icon-spin {
@@ -1068,6 +1200,27 @@ a {
 .message-item:hover,
 .message-item:focus-visible {
   background: var(--bg-elevated);
+}
+
+.message-item--enter {
+  animation: message-enter 0.4s cubic-bezier(0.2, 0.9, 0.3, 1.1) both;
+}
+
+@keyframes message-enter {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .message-item--enter {
+    animation: none;
+  }
 }
 
 .message-item__avatar {
@@ -1396,6 +1549,40 @@ a {
 }
 
 /* =========================================================
+   Homepage prose — real, on-page content about the product
+   itself (not a subpage), separate from the legal-page prose
+   styling used on about/faq/privacy/etc.
+   ========================================================= */
+.about-copy {
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: var(--space-6) var(--space-5);
+  margin-bottom: var(--space-4);
+}
+
+.about-copy h2 {
+  font-size: 1.05rem;
+  margin: var(--space-6) 0 var(--space-2);
+  color: var(--text);
+}
+
+.about-copy h2:first-child {
+  margin-top: 0;
+}
+
+.about-copy p {
+  margin: 0 0 var(--space-3);
+  font-size: 0.92rem;
+  line-height: 1.7;
+  color: var(--text-soft);
+}
+
+.about-copy p:last-child {
+  margin-bottom: 0;
+}
+
+/* =========================================================
    Message detail overlay (mobile / narrow-viewport reader —
    the wide-viewport detail rail is a separate, simpler panel)
    ========================================================= */
@@ -1501,6 +1688,138 @@ a {
   max-height: 60vh;
   overflow-y: auto;
   color: var(--text);
+}
+
+/* =========================================================
+   Attachments (message detail overlay)
+   ========================================================= */
+.message-detail__attachments:empty {
+  display: none;
+}
+
+.message-detail__attachments-heading {
+  margin: var(--space-4) 0 var(--space-2);
+  font-size: 0.76rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-faint);
+}
+
+.attachment-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  margin-bottom: var(--space-2);
+  background: var(--bg-elevated-2);
+}
+
+.attachment-row__icon {
+  display: inline-flex;
+  flex: 0 0 auto;
+  color: var(--accent);
+}
+
+.attachment-row__name {
+  flex: 1 1 auto;
+  min-width: 0;
+  font-size: 0.84rem;
+  font-weight: 600;
+  color: var(--text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.attachment-row__size {
+  flex: 0 0 auto;
+  font-family: var(--font-mono);
+  font-size: 0.74rem;
+  color: var(--text-faint);
+}
+
+.attachment-row__download {
+  flex: 0 0 auto;
+  font-size: 0.78rem;
+  padding: var(--space-1) var(--space-3);
+  min-height: 32px;
+}
+
+/* =========================================================
+   QR code overlay
+   ========================================================= */
+.qr-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-5) var(--space-3);
+  z-index: 50;
+}
+
+:root[data-theme='light'] .qr-overlay {
+  background: rgba(20, 17, 10, 0.4);
+}
+
+.qr-overlay[hidden] {
+  display: none;
+}
+
+.qr-overlay:not([hidden]) {
+  animation: overlay-fade 0.2s ease both;
+}
+
+.qr-modal {
+  position: relative;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius);
+  max-width: 320px;
+  width: 100%;
+  padding: var(--space-6) var(--space-5) var(--space-5);
+  box-shadow: var(--shadow-card-lg);
+  text-align: center;
+  animation: modal-in 0.22s cubic-bezier(0.2, 0.9, 0.3, 1.1) both;
+}
+
+.qr-modal__close {
+  position: absolute;
+  top: var(--space-3);
+  right: var(--space-3);
+}
+
+.qr-modal__title {
+  font-size: 1rem;
+  margin: 0 0 var(--space-4);
+  color: var(--text);
+}
+
+.qr-modal__code {
+  display: inline-flex;
+  padding: var(--space-3);
+  background: #ffffff;
+  border-radius: var(--radius-sm);
+  margin: 0 auto var(--space-3);
+}
+
+.qr-modal__address {
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  color: var(--text-soft);
+  overflow-wrap: anywhere;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .qr-overlay:not([hidden]) {
+    animation: none;
+  }
 }
 
 /* =========================================================
@@ -1736,7 +2055,7 @@ a {
     flex-wrap: wrap;
   }
 
-  .address-card .btn {
+  .address-card .btn:not(.btn--round) {
     width: 100%;
   }
 
