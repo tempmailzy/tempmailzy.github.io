@@ -163,12 +163,18 @@
    * (ADDRESS_TAKEN) so the caller can ask the user for a different
    * name instead of silently substituting a random one. Without it,
    * retries with a fresh random local part on collisions (max
-   * `maxAttempts` tries). Transient network/5xx/429 failures are
-   * already retried one layer down inside fetchWithRetry.
+   * `maxAttempts` tries). `desiredDomain`, when it's one of the
+   * currently active domains, is used instead of a random pick —
+   * otherwise falls back to random exactly as before. Transient
+   * network/5xx/429 failures are already retried one layer down
+   * inside fetchWithRetry.
    */
-  async function createAccountWithRetry(maxAttempts = 3, desiredLocalPart = null) {
+  async function createAccountWithRetry(maxAttempts = 3, desiredLocalPart = null, desiredDomain = null) {
     const domains = await getActiveDomains();
-    const domain = domains[Math.floor(Math.random() * domains.length)].domain;
+    const domain =
+      desiredDomain && domains.some((d) => d.domain === desiredDomain)
+        ? desiredDomain
+        : domains[Math.floor(Math.random() * domains.length)].domain;
 
     if (desiredLocalPart) {
       const cleaned = sanitizeLocalPart(desiredLocalPart);
@@ -287,6 +293,7 @@
 
   global.MailTm = {
     MailTmError,
+    getActiveDomains,
     createAccountWithRetry,
     getToken,
     listMessages,
